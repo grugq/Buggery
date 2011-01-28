@@ -143,8 +143,10 @@ class DebugEventCallbacks(CoClass):
 
 
 class Registers(object):
-    def __init__(self, registers):
-        self._registers = registers
+    def __init__(self, client):
+        self._client = client
+        query_i = self._client.get_com_interface
+        self._registers = query_i(interface=DbgEng.IDebugRegisters)
         self._map = None
 
     def _build_map(self):
@@ -214,118 +216,27 @@ class Registers(object):
 
         return self.get_value_by_name(name)
 
+
 class Control(object):
     def __init__(self, client):
         self._client = client
-
-class DataSpaces(object):
-    def __init__(self, client):
-        self._client = client
-        self._data_space  = query_i(interface=DbgEng.IDebugDataSpaces)
-        self._data_space2 = query_i(interface=DbgEng.IDebugDataSpaces2)
-        self._data_space3 = query_i(interface=DbgEng.IDebugDataSpaces3)
-        self._data_space4 = query_i(interface=DbgEng.IDebugDataSpaces4)
-
-    def read(self, address, count):
-        buf = ct.create_string_buffer(count)
-        nbytes = ct.c_ulong()
-
-        f = self._data_space._IDebugDataSpace__com_ReadVirtualUncached
-        hresult = f(ct.c_ulonglong(address), ct.byref(buf), ct.sizeof(buf),
-                    ct.byref(nbytes))
-        if hresult != S_OK:
-            raise RuntimeError("Fuck, that didn't work: %d" % hresult)
-        return buf.raw[:nbytes.value]
-
-    def write(self, address, buf):
-        raise NotImplementedError("sorry, not done yet")
-    def search(self, pattern, address=None, length=None):
-        raise NotImplementedError("sorry, not done yet")
-
-class IDebugClient(object):
-    def __init__(self, event_cb=None, output_cb=None, input_cb=None):
-        self._client = utils.create_idebug_client()
-
-        query_i = self._client.QueryInterface
-        self._control        = query_i(interface = DbgEng.IDebugControl)
-        self._data_spaces    = query_i(interface = DbgEng.IDebugDataSpaces3)
-        self._registers      = query_i(interface = DbgEng.IDebugRegisters)
-        self._symbols        = query_i(interface = DbgEng.IDebugSymbols)
-        self._system_objects = query_i(interface = DbgEng.IDebugSystemObjects)
-        del query_i
-
-        self.registers = Registers(self._registers)
-
-        if event_cb is not None:
-            self.set_event_callbacks(event_cb)
-        if output_cb is not None:
-            self.set_output_callbacks(output_cb)
-        if input_cb is not None:
-            self.set_input_callbacks(input_cb)
-
-    def get_control(self):
-        query_i = self._client.QueryInterface
-        return query_i(interface = DbgEng.IDebugControl)
-
-    def set_symbol_path(self, symbol_path):
-        self._symbols.SetSymbolPath(symbol_path)
-
-    def set_event_callbacks(self, event_callbacks):
-        event_proxy = DebugEventCallbacks(event_callbacks)
-        event_proxy.IUnknown_AddRef(event_proxy)
-
-        self._client.SetEventCallbacks(Callbacks=event_proxy)
-
-    def set_output_callbacks(self, output_callbacks):
-        output_proxy = DebugOutputCallback(output_callbacks)
-        output_proxy.IUnknown_AddRef(output_proxy)
-
-        self._client.SetOutputCallbacks(Callbacks=output_proxy)
-
-    def set_input_callbacks(self, input_callbacks): pass
-
-    def write(self, buf):
-        retval = self._client.ReturnInput(buf)
-        if retval != S_OK:
-            return None
-        return len(buf)
-
-    def execute(self, cmd):
-        self._control.Execute(DbgEng.DEBUG_OUTCTL_THIS_CLIENT, cmd, 0)
-        self._client.FlushCallbacks()
-
-    def assemble(self, address, asm):
-        naddress = self._control.Assemble(address, asm)
-        return naddress
+        query_i = self._client.get_com_interface
+        self._control  = query_i(interface=DbgEng.IDebugControl)
+        self._control2 = query_i(interface=DbgEng.IDebugControl2)
+        self._control3 = query_i(interface=DbgEng.IDebugControl3)
+        self._control4 = query_i(interface=DbgEng.IDebugControl4)
 
     def wait_for_event(self, timeout_ms=-1):
         retval = self._control.WaitForEvent(0, timeout_ms)
         if retval != S_OK:
             raise RuntimeError("Something fucked up: %d" % retval)
 
-    def create_process(self, cmd_line, follow_forks=False):
-        if follow_forks:
-            flags = DbgEng.DEBUG_PROCESS
-        else:
-            flags = DbgEng.DEBUG_ONLY_THIS_PROCESS
+    def execute(self, cmd):
+        self._control.Execute(DbgEng.DEBUG_OUTCTL_THIS_CLIENT, cmd, 0)
 
-        self._client.CreateProcess(0, CommandLine=cmd_line, CreateFlags=flags)
-
-    def attach_process(self, pid):
-        flags = DbgEng.DEBUG_ATTACH_DEFAULT
-        self._client.AttachProcess(0, ProcessId=pid, AttachFlags=flags)
-
-    def open_dumpfile(self, path):
-        self._client.OpenDumpFile(path)
-
-    def terminate_processes(self):
-        self._client.TerminateProcesses()
-
-    def detach_processes(self):
-        self._client.DetachProcesses()
-
-    def get_exit_code(self):
-        return self._client.GetExitCode()
+    def assemble(self, address, asm):
+        naddress = self._control.Assemble(address, asm)
+        return naddress
 
     def get_execution_status(self):
         status = self._control.GetExecutionStatus()
@@ -350,3 +261,122 @@ class IDebugClient(object):
         if hresult != S_OK:
             raise RuntimeError("Ffuuuuuuuuuck: %d" % hresult)
         return (typ.value, pid.value, tid.value, extra.raw[:extra_used.value])
+
+
+class DataSpaces(object):
+    def __init__(self, client):
+        self._client = client
+        query_i = self._client.get_com_interface
+        self._data_space  = query_i(interface=DbgEng.IDebugDataSpaces)
+        self._data_space2 = query_i(interface=DbgEng.IDebugDataSpaces2)
+        self._data_space3 = query_i(interface=DbgEng.IDebugDataSpaces3)
+        self._data_space4 = query_i(interface=DbgEng.IDebugDataSpaces4)
+
+    def read(self, address, count):
+        buf = ct.create_string_buffer(count)
+        nbytes = ct.c_ulong()
+
+        f = self._data_space._IDebugDataSpace__com_ReadVirtualUncached
+        hresult = f(ct.c_ulonglong(address), ct.byref(buf), ct.sizeof(buf),
+                    ct.byref(nbytes))
+        if hresult != S_OK:
+            raise RuntimeError("Fuck, that didn't work: %d" % hresult)
+        return buf.raw[:nbytes.value]
+
+    def write(self, address, buf):
+        raise NotImplementedError("sorry, not done yet")
+
+    def search(self, pattern, address=None, length=None):
+        raise NotImplementedError("sorry, not done yet")
+
+
+class Symbols(object):
+    def __init__(self, client):
+        self._client = client
+        query_i = self._client.get_com_interface
+        self._symbols = query_i(interface=DbgEng.IDebugSymbols)
+
+class SystemObjects(object):
+    def __init__(self, client):
+        self._client = client
+        query_i = self._client.get_com_interface
+        self._system_objects  = query_i(interface=DbgEng.IDebugSystemObjects)
+        self._system_objects2 = query_i(interface=DbgEng.IDebugSystemObjects2)
+        self._system_objects3 = query_i(interface=DbgEng.IDebugSystemObjects3)
+
+
+class Client(object):
+    def __init__(self, event_cb=None, output_cb=None, input_cb=None):
+        self._client = utils.create_idebug_client()
+
+        if event_cb is not None:
+            self.set_event_callbacks(event_cb)
+        if output_cb is not None:
+            self.set_output_callbacks(output_cb)
+        if input_cb is not None:
+            self.set_input_callbacks(input_cb)
+
+    def get_com_interface(self, interface):
+        return self._client.QueryInterface(interface=interface)
+
+    def set_event_callbacks(self, event_callbacks):
+        event_proxy = DebugEventCallbacks(event_callbacks)
+        event_proxy.IUnknown_AddRef(event_proxy)
+
+        self._client.SetEventCallbacks(Callbacks=event_proxy)
+
+    def set_output_callbacks(self, output_callbacks):
+        output_proxy = DebugOutputCallback(output_callbacks)
+        output_proxy.IUnknown_AddRef(output_proxy)
+
+        self._client.SetOutputCallbacks(Callbacks=output_proxy)
+
+    def set_input_callbacks(self, input_callbacks): pass
+
+    def write(self, buf):
+        retval = self._client.ReturnInput(buf)
+        if retval != S_OK:
+            return None
+        return len(buf)
+
+    def flush_output(self):
+        self._client.FlushCallbacks()
+
+    def create_process(self, cmd_line, follow_forks=False):
+        if follow_forks:
+            flags = DbgEng.DEBUG_PROCESS
+        else:
+            flags = DbgEng.DEBUG_ONLY_THIS_PROCESS
+
+        self._client.CreateProcess(0, CommandLine=cmd_line, CreateFlags=flags)
+
+    def attach_process(self, pid):
+        flags = DbgEng.DEBUG_ATTACH_DEFAULT
+        self._client.AttachProcess(0, ProcessId=pid, AttachFlags=flags)
+
+    def open_dumpfile(self, path):
+        self._client.OpenDumpFile(path)
+
+    def write_dumpfile(self, path, mode=0):
+        '''write_dumpfile(path, mode)
+
+        mode -> 0 == DEBUG_DUMP_DEFAULT
+        mode -> 1 == DEBUG_DUMP_SMALL
+        mode -> 2 == DEBUG_DUMP_FULL
+        '''
+        if mode == 0:
+            mode = DbgEng.DEBUG_DUMP_DEFAULT
+        elif mode == 1:
+            mode = DbgEng.DEBUG_DUMP_SMALL
+        elif mode == 2:
+            mode = DbgEng.DEBUG_DUMP_FULL
+        self._client.WriteDumpFile(path, mode)
+
+    def terminate_processes(self):
+        self._client.TerminateProcesses()
+
+    def detach_processes(self):
+        self._client.DetachProcesses()
+
+    def get_exit_code(self):
+        return self._client.GetExitCode()
