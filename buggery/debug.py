@@ -1,11 +1,18 @@
 
-class CollectOutputCallbacks(OutputCallbacks):
+import idebug
+
+# thinking about doing this via contextmanager
+# with output(dbg.execute(cmd))
+
+class CollectOutputCallbacks(idebug.OutputCallbacks):
     def __init__(self):
         self._collection = []
         self._gathering = False
+
     def onOutput(self, mask, text):
         if self._gathering:
             self._collection.append(text)
+
     def start(self):
         self._collection = []
         self._gathering = True
@@ -13,6 +20,49 @@ class CollectOutputCallbacks(OutputCallbacks):
         self._gathering = False
     def get_output(self):
         return self._collection
+
+class CollectEventCallbacks(idebug.EventCallbacks):
+    INTEREST_MASK = (idebug.DbgEng.DEBUG_EVENT_BREAKPOINT |
+                     idebug.DbgEng.DEBUG_EVENT_EXCEPTION)
+
+    def get_interest_mask(self):
+        return self.INTEREST_MASK
+
+    def handle_event(self, eventtype, event):
+        pass
+
+    def onGetInterestMask(self):
+        return self.get_interest_mask()
+
+    def onBreakpoint(self, bp):
+        return self.handle_event('BREAKPOINT', bp)
+
+    def onChangeDebuggeeState(self, flags, arg):
+        return self.handle_event('DEBUGEESTATE', (flags, arg))
+
+    def onChangeEngineState(self, flags, arg):
+        return self.handle_event('ENGINESTATE', (flags, arg))
+
+    def onException(self, exception):
+        return self.handle_event('EXCEPTION', exception)
+
+    def onLoadModule(self, imageFileHandle, baseOffset, moduleSize, moduleName,
+                     imageName, checkSum, timeDateStamp):
+        return self.handle_event('LOAD', ())
+
+    def onUnloadModule(self, imageBaseName, baseOffset):
+        return self.handle_event('UNLOAD', (imageBaseName, baseOffset))
+
+    def onCreateProcess(self, imageFileHandle, handle, baseOffset, moduleSize,
+                       moduleName, imageName, checkSum, timeDateStamp,
+                       initialThreadHandle, threadDataOffset, startOffset): pass
+
+    def onExitProcess(self, exitCode): pass
+    def onSessionStatus(self, status): pass
+    def onChangeSymbolState(self, flags, arg): pass
+    def onSystemError(self, error, level): pass
+    def onCreateThread(self,handle, dataOffset, startOffset): pass
+    def onExitThread(self, exitCode): pass
 
 class Debugger(object):
     def __init__(self):
@@ -28,6 +78,13 @@ class Debugger(object):
         self.client.flush_output()
         self._output.stop()
         return self._output.get_output()
+
+    def step_into(self):
+        pass
+    def step_over(self):
+        pass
+    def step_branch(self):
+        pass
 
     def spawn(self, cmdline):
         self.client.create_process(cmdline)

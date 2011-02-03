@@ -1,14 +1,19 @@
 
-import utils
 import comtypes
 import ctypes as ct
 from comtypes import CoClass, GUID
 from comtypes.hresult import S_OK, S_FALSE
 from comtypes.gen import DbgEng
 from collections import namedtuple
+import struct
+
+import utils
 
 class BadRegisterError(RuntimeError): pass
 
+GO_HANDLED = DbgEng.DEBUG_STATUS_GO_HANDLED
+GO_NOT_HANDLED = DbgEng.DEBUG_STATUS_GO_NOT_HANDLED
+GO_IGNORED = DbgEng.DEBUG_STATUS_IGNORE_EVENT
 
 class OutputCallbacks(object):
     def onOutput(self, mask, text): pass
@@ -177,7 +182,11 @@ class Registers(object):
         if self._map is None:
             self._build_map()
         rval = self._registers.GetValue(self._map[name])
-        rval.u.I64 = value # let the union() sort it out..
+
+        for v in ("I64", "I32", "I16", "I8"):
+            if hasattr(rval.u, v):
+                setattr(rval.u, v, value) # let the union {} sort it out...
+
         self._registers.SetValue(self._map[name], ct.byref(rval))
 
     def keys(self):
@@ -207,13 +216,14 @@ class Registers(object):
             self._build_map()
         return len(self._map)
 
-    def __getattr__(self, name):
+    def __contains__(self, name):
         if self._map is None:
             self._build_map()
+        return name in self._map
 
-        if name not in self._map:
+    def __getattr__(self, name):
+        if name not in self:
             raise AttributeError("No such register: %s" % name)
-
         return self.get_value_by_name(name)
 
 
@@ -262,6 +272,40 @@ class Control(object):
             raise RuntimeError("Ffuuuuuuuuuck: %d" % hresult)
         return (typ.value, pid.value, tid.value, extra.raw[:extra_used.value])
 
+    def get_access_violation_event(self):
+        avtype, pid, tid, extra = self.get_last_event()
+        extra = struct.unpack("IIQQII16Q", extra)
+
+        ExceptionInformation = namedtuple("ExceptionInformation","code, flags, record, address, nparams, av_flag, av_address, info")
+        exinfo = ExceptionInformation(extra[0], extra[1], extra[2], extra[3],
+                                      extra[4], extra[6], extra[7], extra[8:])
+        return avtype, pid, tid, exinfo
+
+    def set_breakpoint(self, address, hardware=False, oneshot=False):
+        mode = DbgEng.DEBUG_BREAKPOINT_CODE
+        if hardware:
+            mode = DbgEng.DEBUG_BREAKPOINT_DATA
+
+        flags = DbgEng.DEBUG_BREAKPOINT_ENABLED
+        if oneshot:
+            flags |= DbgEng.DEBUG_BREAKPOINT_ONE_SHOT
+
+        bp = self._control.AddBreakpoint(mode, DbgEng.DEBUG_ANY_ID)
+        bp.SetOffset(address)
+        bp.AddFlags(flags)
+
+        return bp.GetId()
+
+    def add_extension(self, path):
+        return self._control.AddExtention(path, 0)
+    def remove_extension(self, handle):
+        self._control.RemoveExtension(handle)
+    def get_extension_by_path(self, path):
+        handle = self._control.GetExtensionByPath(path)
+        return handle.value
+    def call_extension(self, handle, extension, args):
+        return self._control.CallExtension(handle, extension, args)
+
 
 class DataSpaces(object):
     def __init__(self, client):
@@ -291,10 +335,15 @@ class DataSpaces(object):
 
 
 class Symbols(object):
+    DEFAULT_PATH=r'''SRV*%SYSTEMROOT%\localsymbols*http://msdl.microsoft.com/download/symbols'''
     def __init__(self, client):
         self._client = client
         query_i = self._client.get_com_interface
         self._symbols = query_i(interface=DbgEng.IDebugSymbols)
+    def set_symbol_path(self, path=None):
+        if path is None:
+            path = self.DEFAULT_PATH
+        return self._symbols.SetSymbolPath(path)
 
 class SystemObjects(object):
     def __init__(self, client):
