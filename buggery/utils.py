@@ -17,8 +17,7 @@ try:
 except ImportError:
     import comtypes
 
-    tlb_file = os.path.join(os.path.dirname(Defines.__file__,
-                                            "data", "DbgEng.tlb"))
+    tlb_file = os.path.join(os.path.dirname(Defines.__file__), "DbgEng.tlb")
     comtypes.client.GetModule(tlb_file)
 
     from comtypes.gen import DbgEng
