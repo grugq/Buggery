@@ -5,3 +5,9 @@ Dependencies:
     * debugging tools for Windows
     * comtypes
     * python 2.7
+
+= CREDIT =
+
+I have borrowed several files, as well as some code, from the PyDbgEng
+project. I am indebted to them for their work, which showed me how to
+make things work on Windows.

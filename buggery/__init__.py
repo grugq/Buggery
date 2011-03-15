@@ -1,5 +1,5 @@
 import util
-
+from debug import Debugger
 
 
 class error(Exception):

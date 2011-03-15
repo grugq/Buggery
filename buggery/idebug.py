@@ -43,6 +43,8 @@ class DebugOutputCallback(CoClass):
 ExceptionEvent = namedtuple("ExceptionEvent",
                  "code,flags,record,address,information,firstchance")
 Breakpoint = namedtuple("Breakpoint", "offset,id,breaktype,proctype,flags,datasize,dataaccesstype,passcount,currentpasscount,matchthread,commandsize,offsetexpressionsize")
+ExceptionInformation = namedtuple("ExceptionInformation",
+            "code, flags, record, address, nparams, av_flag, av_address, info")
 
 class EventCallbacks(object):
     def onGetInterestMask(self): pass
@@ -261,12 +263,13 @@ class Control(object):
         pid = ct.c_ulong()
         tid = ct.c_ulong()
         extra = ct.create_string_buffer(1024)
+        desc = ct.create_string_buffer(1024)
         extra_used = ct.c_ulong()
         desc_used = ct.c_ulong()
 
         hresult = f(ct.byref(typ), ct.byref(pid), ct.byref(tid),
                     ct.byref(extra), ct.sizeof(extra), ct.byref(extra_used),
-                    ' '*256, 256, ct.byref(desc_used))
+                    desc, ct.sizeof(desc), ct.byref(desc_used))
 
         if hresult != S_OK:
             raise RuntimeError("Ffuuuuuuuuuck: %d" % hresult)
@@ -276,7 +279,6 @@ class Control(object):
         avtype, pid, tid, extra = self.get_last_event()
         extra = struct.unpack("IIQQII16Q", extra)
 
-        ExceptionInformation = namedtuple("ExceptionInformation","code, flags, record, address, nparams, av_flag, av_address, info")
         exinfo = ExceptionInformation(extra[0], extra[1], extra[2], extra[3],
                                       extra[4], extra[6], extra[7], extra[8:])
         return avtype, pid, tid, exinfo

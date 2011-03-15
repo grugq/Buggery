@@ -86,6 +86,13 @@ class Debugger(object):
     def step_branch(self):
         pass
 
+    def wait_for_event(self):
+        return self.control.wait_for_event()
+
+    def next_event(self):
+        self.wait_for_event()
+        return self.control.get_last_event()
+
     def spawn(self, cmdline):
         self.client.create_process(cmdline)
 
