@@ -27,6 +27,9 @@ DBGENG_DLL = None
 DBGHELP_DLL = None
 
 
+def module_from_tlb(tlb_file):
+    comtypes.client.GetModule(tlb_file)
+
 def find_dbg_eng_path():
     def check_registery():
         hkey = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, "Software\\Microsoft\\DebuggingTools")
