@@ -50,8 +50,6 @@ class DebugEventHandler(idebug.EventHandler):
             return self._bp_callbacks[bp.id](bp)
 
     def handle_event(self, eventtype, event):
-        print ">>", eventtype, repr(event)
-
         try:
             retval = None
             retval = self.handlers[eventtype](event)
