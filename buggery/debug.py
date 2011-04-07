@@ -86,6 +86,11 @@ class Debugger(object):
     def step_branch(self):
         pass
 
+    def breakpoint(self, address, callback, hardware=False, oneshot=False):
+        bpid = self.control.set_breakpoint(address, hardware, oneshot)
+        self._handler.breakpoints[bpid] = callback
+        return bpid
+
     def wait_for_event(self):
         return self.control.wait_for_event()
 

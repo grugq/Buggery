@@ -11,9 +11,25 @@ import utils
 
 class BadRegisterError(RuntimeError): pass
 
+
 GO_HANDLED = DbgEng.DEBUG_STATUS_GO_HANDLED
 GO_NOT_HANDLED = DbgEng.DEBUG_STATUS_GO_NOT_HANDLED
 GO_IGNORED = DbgEng.DEBUG_STATUS_IGNORE_EVENT
+
+class BreakpointControl(object):
+    def __init__(self, bp):
+        self.bp = bp
+    def enable(self):
+        self.bp.SetF
+    def set_command(self, cmd):
+        self.bp.SetCommand(cmd)
+    def get_command(self):
+        return self.bp.GetCommand()
+    def set_mem_size(self, size):
+        self.bp.SetDataParameters(size, mode)
+    def set_access_mode(self, mode):
+        self.bp.SetDataParameters(size, mode)
+
 
 class OutputCallbacks(object):
     def onOutput(self, mask, text): pass
@@ -283,20 +299,72 @@ class Control(object):
                                       extra[4], extra[6], extra[7], extra[8:])
         return avtype, pid, tid, exinfo
 
-    def set_breakpoint(self, address, hardware=False, oneshot=False):
-        mode = DbgEng.DEBUG_BREAKPOINT_CODE
-        if hardware:
-            mode = DbgEng.DEBUG_BREAKPOINT_DATA
-
-        flags = DbgEng.DEBUG_BREAKPOINT_ENABLED
+    def _new_breakpoint(self, bptype, oneshot=False, private=False, cmd=None):
+        bp = self._control.AddBreakpoint(bptype, DbgEng.DEBUG_ANY_ID)
         if oneshot:
-            flags |= DbgEng.DEBUG_BREAKPOINT_ONE_SHOT
+            bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ONE_SHOT)
+        if private:
+            bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ADDER_ONLY)
+        if cmd is not None:
+            bp.SetCommand(cmd)
+        return bp
 
-        bp = self._control.AddBreakpoint(mode, DbgEng.DEBUG_ANY_ID)
-        bp.SetOffset(address)
-        bp.AddFlags(flags)
+    def set_watchpoint(self, address, size, mode='rwx', oneshot=False,
+                           private=False, cmd=None):
+        bp = self._new_breakpoint(DbgEng.DEBUG_BREAKPOINT_DATA,oneshot,private,cmd)
 
-        return bp.GetId()
+        bpmode = 0
+        if 'r' in mode:
+            bpmode |= DbgEng.DEBUG_BREAK_READ
+        if 'w' in mode:
+            bpmode |= DbgEng.DEBUG_BREAK_WRITE
+        if 'x' in mode:
+            bpmode |= DbgEng.DEBUG_BREAK_EXECUTE
+
+        bp.SetDataParameters(size, bpmode)
+        bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ENABLED)
+        return bp
+
+    def set_breakpoint(self, address, oneshot=False, private=False, cmd=None):
+        def get_address(address):
+            if isinstance(address, (str, unicode)):
+                try:
+                    address = int(address)
+                except ValueError:
+                    if address.startswith("0x"):
+                        address = int(address, 16)
+                    else:
+                        address = None
+            return address
+
+        bp = self._new_breakpoint(DbgEng.DEBUG_BREAKPOINT_CODE,oneshot,private,cmd)
+
+        addr = get_address(address)
+        if addr is not None:
+            bp.SetOffset(address)
+        else:
+            bp.SetOffsetExpression(address)
+
+        bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ENABLED)
+
+        return bp
+
+    def get_num_breakpoints(self):
+        return self._control.GetNumberBreakpoints()
+    def get_breakpoint_by_index(self, ndx):
+        bp = self._control.GetBreakpointByIndex(ndx)
+        return bp
+    def get_breakpoint_by_id(self, bpid):
+        bp = self._control.GetBreakpointById(bpid)
+        return bpid
+    def remove_breakpoint(self, bpid=None, ndx=None):
+        if bpid is not None:
+            bp = self._control.GetBreakpointById(bpid)
+        elif ndx is not None:
+            bp = self._control.GetBreakpointByIndex(ndx)
+        else:
+            raise RuntimeError("Kinda need either an index or an ID, you know?")
+        return self._control.RemoveBreakpoint(bp)
 
     def add_extension(self, path):
         return self._control.AddExtention(path, 0)

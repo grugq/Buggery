@@ -380,9 +380,9 @@ interface IDebugBreakpoint : IUnknown {
 	HRESULT GetCurrentPassCount([out]  unsigned long* Count );
 	HRESULT GetMatchThreadId([out]  unsigned long* Id );
 	HRESULT SetMatchThreadId([in]  unsigned long Thread );
-	HRESULT GetCommand([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* CommandSize );
+	HRESULT GetCommand([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* CommandSize );
 	HRESULT SetCommand([in]  const char* Command );
-	HRESULT GetOffsetExpression([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExpressionSize );
+	HRESULT GetOffsetExpression([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExpressionSize );
 	HRESULT SetOffsetExpression([in]  const char* Expression );
 	HRESULT GetParameters([out]  PDEBUG_BREAKPOINT_PARAMETERS Params );
 };
@@ -410,9 +410,9 @@ interface IDebugBreakpoint2 : IUnknown {
 	HRESULT GetCurrentPassCount([out]  unsigned long* Count );
 	HRESULT GetMatchThreadId([out]  unsigned long* Id );
 	HRESULT SetMatchThreadId([in]  unsigned long Thread );
-	HRESULT GetCommand([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* CommandSize );
+	HRESULT GetCommand([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* CommandSize );
 	HRESULT SetCommand([in]  const char* Command );
-	HRESULT GetOffsetExpression([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExpressionSize );
+	HRESULT GetOffsetExpression([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExpressionSize );
 	HRESULT SetOffsetExpression([in]  const char* Expression );
 	HRESULT GetParameters([out]  PDEBUG_BREAKPOINT_PARAMETERS Params );
 	HRESULT GetCommandWide([out,optional]  wchar_t* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* CommandSize );
@@ -494,14 +494,14 @@ enum {DEBUG_OUTPUT_IDENTITY_DEFAULT = 0x00000000};
 ]
 interface IDebugClient : IUnknown {
 	HRESULT AttachKernel([in]  unsigned long Flags,[in,optional] const char* ConnectOptions );
-	HRESULT GetKernelConnectionOptions([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
+	HRESULT GetKernelConnectionOptions([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
 	HRESULT SetKernelConnectionOptions([in]  const char* Options );
 	HRESULT StartProcessServer([in]  unsigned long Flags,[in] const char* Options,[in,optional] PVOID Reserved );
 	HRESULT ConnectProcessServer([in]  const char* RemoteOptions,[out] unsigned __int64* Server );
 	HRESULT DisconnectProcessServer([in]  unsigned __int64 Server );
 	HRESULT GetRunningProcessSystemIds([in]  unsigned __int64 Server,[out,optional] unsigned long* Ids,[in,optional] unsigned long Count,[out,optional] unsigned long* ActualCount );
 	HRESULT GetRunningProcessSystemIdByExecutableName([in]  unsigned __int64 Server,[in] const char* ExeName,[in] unsigned long Flags,[out] unsigned long* Id );
-	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] char* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
+	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] void* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
 	HRESULT AttachProcess([in]  unsigned __int64 Server,[in] unsigned long ProcessId,[in] unsigned long AttachFlags );
 	HRESULT CreateProcess([in]  unsigned __int64 Server,[in] char* CommandLine,[in] unsigned long CreateFlags );
 	HRESULT CreateProcessAndAttach([in]  unsigned __int64 Server,[in,optional] char* CommandLine,[in,optional] unsigned long CreateFlags,[in,optional] unsigned long ProcessId,[in,optional] unsigned long AttachFlags );
@@ -531,9 +531,9 @@ interface IDebugClient : IUnknown {
 	HRESULT SetOtherOutputMask([in]  IDebugClient* Client,[in] unsigned long Mask );
 	HRESULT GetOutputWidth([out]  unsigned long* Columns );
 	HRESULT SetOutputWidth([in]  unsigned long Columns );
-	HRESULT GetOutputLinePrefix([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
+	HRESULT GetOutputLinePrefix([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
 	HRESULT SetOutputLinePrefix([in,optional]  const char* Prefix );
-	HRESULT GetIdentity([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
+	HRESULT GetIdentity([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
 	HRESULT OutputIdentity([in]  unsigned long OutputControl,[in] unsigned long Flags,[in] const char* Format );
 	HRESULT GetEventCallbacks([out]  IDebugEventCallbacks** Callbacks );
 	HRESULT SetEventCallbacks([in,optional]  IDebugEventCallbacks* Callbacks );
@@ -569,14 +569,14 @@ enum {DEBUG_DUMP_FILE_PAGE_FILE_DUMP = 0x00000000};
 ]
 interface IDebugClient2 : IUnknown {
 	HRESULT AttachKernel([in]  unsigned long Flags,[in,optional] const char* ConnectOptions );
-	HRESULT GetKernelConnectionOptions([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
+	HRESULT GetKernelConnectionOptions([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
 	HRESULT SetKernelConnectionOptions([in]  const char* Options );
 	HRESULT StartProcessServer([in]  unsigned long Flags,[in] const char* Options,[in,optional] PVOID Reserved );
 	HRESULT ConnectProcessServer([in]  const char* RemoteOptions,[out] unsigned __int64* Server );
 	HRESULT DisconnectProcessServer([in]  unsigned __int64 Server );
 	HRESULT GetRunningProcessSystemIds([in]  unsigned __int64 Server,[out,optional] unsigned long* Ids,[in,optional] unsigned long Count,[out,optional] unsigned long* ActualCount );
 	HRESULT GetRunningProcessSystemIdByExecutableName([in]  unsigned __int64 Server,[in] const char* ExeName,[in] unsigned long Flags,[out] unsigned long* Id );
-	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] char* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
+	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] void* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
 	HRESULT AttachProcess([in]  unsigned __int64 Server,[in] unsigned long ProcessId,[in] unsigned long AttachFlags );
 	HRESULT CreateProcess([in]  unsigned __int64 Server,[in] char* CommandLine,[in] unsigned long CreateFlags );
 	HRESULT CreateProcessAndAttach([in]  unsigned __int64 Server,[in,optional] char* CommandLine,[in,optional] unsigned long CreateFlags,[in,optional] unsigned long ProcessId,[in,optional] unsigned long AttachFlags );
@@ -606,9 +606,9 @@ interface IDebugClient2 : IUnknown {
 	HRESULT SetOtherOutputMask([in]  IDebugClient* Client,[in] unsigned long Mask );
 	HRESULT GetOutputWidth([out]  unsigned long* Columns );
 	HRESULT SetOutputWidth([in]  unsigned long Columns );
-	HRESULT GetOutputLinePrefix([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
+	HRESULT GetOutputLinePrefix([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
 	HRESULT SetOutputLinePrefix([in,optional]  const char* Prefix );
-	HRESULT GetIdentity([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
+	HRESULT GetIdentity([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
 	HRESULT OutputIdentity([in]  unsigned long OutputControl,[in] unsigned long Flags,[in] const char* Format );
 	HRESULT GetEventCallbacks([out]  IDebugEventCallbacks** Callbacks );
 	HRESULT SetEventCallbacks([in,optional]  IDebugEventCallbacks* Callbacks );
@@ -631,14 +631,14 @@ interface IDebugClient2 : IUnknown {
 ]
 interface IDebugClient3 : IUnknown {
 	HRESULT AttachKernel([in]  unsigned long Flags,[in,optional] const char* ConnectOptions );
-	HRESULT GetKernelConnectionOptions([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
+	HRESULT GetKernelConnectionOptions([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
 	HRESULT SetKernelConnectionOptions([in]  const char* Options );
 	HRESULT StartProcessServer([in]  unsigned long Flags,[in] const char* Options,[in,optional] PVOID Reserved );
 	HRESULT ConnectProcessServer([in]  const char* RemoteOptions,[out] unsigned __int64* Server );
 	HRESULT DisconnectProcessServer([in]  unsigned __int64 Server );
 	HRESULT GetRunningProcessSystemIds([in]  unsigned __int64 Server,[out,optional] unsigned long* Ids,[in,optional] unsigned long Count,[out,optional] unsigned long* ActualCount );
 	HRESULT GetRunningProcessSystemIdByExecutableName([in]  unsigned __int64 Server,[in] const char* ExeName,[in] unsigned long Flags,[out] unsigned long* Id );
-	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] char* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
+	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] void* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
 	HRESULT AttachProcess([in]  unsigned __int64 Server,[in] unsigned long ProcessId,[in] unsigned long AttachFlags );
 	HRESULT CreateProcess([in]  unsigned __int64 Server,[in] char* CommandLine,[in] unsigned long CreateFlags );
 	HRESULT CreateProcessAndAttach([in]  unsigned __int64 Server,[in,optional] char* CommandLine,[in,optional] unsigned long CreateFlags,[in,optional] unsigned long ProcessId,[in,optional] unsigned long AttachFlags );
@@ -668,9 +668,9 @@ interface IDebugClient3 : IUnknown {
 	HRESULT SetOtherOutputMask([in]  IDebugClient* Client,[in] unsigned long Mask );
 	HRESULT GetOutputWidth([out]  unsigned long* Columns );
 	HRESULT SetOutputWidth([in]  unsigned long Columns );
-	HRESULT GetOutputLinePrefix([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
+	HRESULT GetOutputLinePrefix([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
 	HRESULT SetOutputLinePrefix([in,optional]  const char* Prefix );
-	HRESULT GetIdentity([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
+	HRESULT GetIdentity([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
 	HRESULT OutputIdentity([in]  unsigned long OutputControl,[in] unsigned long Flags,[in] const char* Format );
 	HRESULT GetEventCallbacks([out]  IDebugEventCallbacks** Callbacks );
 	HRESULT SetEventCallbacks([in,optional]  IDebugEventCallbacks* Callbacks );
@@ -699,14 +699,14 @@ enum {DEBUG_DUMP_FILE_ORIGINAL_CAB_INDEX = 0xfffffffe};
 ]
 interface IDebugClient4 : IUnknown {
 	HRESULT AttachKernel([in]  unsigned long Flags,[in,optional] const char* ConnectOptions );
-	HRESULT GetKernelConnectionOptions([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
+	HRESULT GetKernelConnectionOptions([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
 	HRESULT SetKernelConnectionOptions([in]  const char* Options );
 	HRESULT StartProcessServer([in]  unsigned long Flags,[in] const char* Options,[in,optional] PVOID Reserved );
 	HRESULT ConnectProcessServer([in]  const char* RemoteOptions,[out] unsigned __int64* Server );
 	HRESULT DisconnectProcessServer([in]  unsigned __int64 Server );
 	HRESULT GetRunningProcessSystemIds([in]  unsigned __int64 Server,[out,optional] unsigned long* Ids,[in,optional] unsigned long Count,[out,optional] unsigned long* ActualCount );
 	HRESULT GetRunningProcessSystemIdByExecutableName([in]  unsigned __int64 Server,[in] const char* ExeName,[in] unsigned long Flags,[out] unsigned long* Id );
-	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] char* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
+	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] void* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
 	HRESULT AttachProcess([in]  unsigned __int64 Server,[in] unsigned long ProcessId,[in] unsigned long AttachFlags );
 	HRESULT CreateProcess([in]  unsigned __int64 Server,[in] char* CommandLine,[in] unsigned long CreateFlags );
 	HRESULT CreateProcessAndAttach([in]  unsigned __int64 Server,[in,optional] char* CommandLine,[in,optional] unsigned long CreateFlags,[in,optional] unsigned long ProcessId,[in,optional] unsigned long AttachFlags );
@@ -736,9 +736,9 @@ interface IDebugClient4 : IUnknown {
 	HRESULT SetOtherOutputMask([in]  IDebugClient* Client,[in] unsigned long Mask );
 	HRESULT GetOutputWidth([out]  unsigned long* Columns );
 	HRESULT SetOutputWidth([in]  unsigned long Columns );
-	HRESULT GetOutputLinePrefix([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
+	HRESULT GetOutputLinePrefix([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
 	HRESULT SetOutputLinePrefix([in,optional]  const char* Prefix );
-	HRESULT GetIdentity([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
+	HRESULT GetIdentity([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
 	HRESULT OutputIdentity([in]  unsigned long OutputControl,[in] unsigned long Flags,[in] const char* Format );
 	HRESULT GetEventCallbacks([out]  IDebugEventCallbacks** Callbacks );
 	HRESULT SetEventCallbacks([in,optional]  IDebugEventCallbacks* Callbacks );
@@ -771,14 +771,14 @@ interface IDebugClient4 : IUnknown {
 ]
 interface IDebugClient5 : IUnknown {
 	HRESULT AttachKernel([in]  unsigned long Flags,[in,optional] const char* ConnectOptions );
-	HRESULT GetKernelConnectionOptions([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
+	HRESULT GetKernelConnectionOptions([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* OptionsSize );
 	HRESULT SetKernelConnectionOptions([in]  const char* Options );
 	HRESULT StartProcessServer([in]  unsigned long Flags,[in] const char* Options,[in,optional] PVOID Reserved );
 	HRESULT ConnectProcessServer([in]  const char* RemoteOptions,[out] unsigned __int64* Server );
 	HRESULT DisconnectProcessServer([in]  unsigned __int64 Server );
 	HRESULT GetRunningProcessSystemIds([in]  unsigned __int64 Server,[out,optional] unsigned long* Ids,[in,optional] unsigned long Count,[out,optional] unsigned long* ActualCount );
 	HRESULT GetRunningProcessSystemIdByExecutableName([in]  unsigned __int64 Server,[in] const char* ExeName,[in] unsigned long Flags,[out] unsigned long* Id );
-	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] char* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
+	HRESULT GetRunningProcessDescription([in]  unsigned __int64 Server,[in] unsigned long SystemId,[in] unsigned long Flags,[out,optional] void* ExeName,[in,optional] unsigned long ExeNameSize,[out,optional] unsigned long* ActualExeNameSize,[out,optional] void* Description,[in,optional] unsigned long DescriptionSize,[out,optional] unsigned long* ActualDescriptionSize );
 	HRESULT AttachProcess([in]  unsigned __int64 Server,[in] unsigned long ProcessId,[in] unsigned long AttachFlags );
 	HRESULT CreateProcess([in]  unsigned __int64 Server,[in] char* CommandLine,[in] unsigned long CreateFlags );
 	HRESULT CreateProcessAndAttach([in]  unsigned __int64 Server,[in,optional] char* CommandLine,[in,optional] unsigned long CreateFlags,[in,optional] unsigned long ProcessId,[in,optional] unsigned long AttachFlags );
@@ -808,9 +808,9 @@ interface IDebugClient5 : IUnknown {
 	HRESULT SetOtherOutputMask([in]  IDebugClient* Client,[in] unsigned long Mask );
 	HRESULT GetOutputWidth([out]  unsigned long* Columns );
 	HRESULT SetOutputWidth([in]  unsigned long Columns );
-	HRESULT GetOutputLinePrefix([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
+	HRESULT GetOutputLinePrefix([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PrefixSize );
 	HRESULT SetOutputLinePrefix([in,optional]  const char* Prefix );
-	HRESULT GetIdentity([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
+	HRESULT GetIdentity([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* IdentitySize );
 	HRESULT OutputIdentity([in]  unsigned long OutputControl,[in] unsigned long Flags,[in] const char* Format );
 	HRESULT GetEventCallbacks([out]  IDebugEventCallbacks** Callbacks );
 	HRESULT SetEventCallbacks([in,optional]  IDebugEventCallbacks* Callbacks );
@@ -858,7 +858,7 @@ interface IDebugClient5 : IUnknown {
 	HRESULT GetNumberInputCallbacks([out]  unsigned long* Count );
 	HRESULT GetNumberOutputCallbacks([out]  unsigned long* Count );
 	HRESULT GetNumberEventCallbacks([in]  unsigned long EventFlags,[out] unsigned long* Count );
-	HRESULT GetQuitLockString([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* StringSize );
+	HRESULT GetQuitLockString([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* StringSize );
 	HRESULT SetQuitLockString([in]  const char* String );
 	HRESULT GetQuitLockStringWide([out,optional]  wchar_t* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* StringSize );
 	HRESULT SetQuitLockStringWide([in]  const wchar_t* String );
@@ -1112,12 +1112,12 @@ interface IDebugControl : IUnknown {
 	HRESULT SetInterrupt([in]  unsigned long Flags );
 	HRESULT GetInterruptTimeout([out]  unsigned long* Seconds );
 	HRESULT SetInterruptTimeout([in]  unsigned long Seconds );
-	HRESULT GetLogFile([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
+	HRESULT GetLogFile([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
 	HRESULT OpenLogFile([in]  const char* File,[in] BOOL Append );
 	HRESULT CloseLogFile(  );
 	HRESULT GetLogMask([out]  unsigned long* Mask );
 	HRESULT SetLogMask([in]  unsigned long Mask );
-	HRESULT Input([out]  char* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
+	HRESULT Input([out]  void* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
 	HRESULT ReturnInput([in]  const char* Buffer );
 	HRESULT Output([in]  unsigned long Mask,[in] const char* Format, SAFEARRAY(VARIANT) );
 	HRESULT OutputVaList([in]  unsigned long Mask,[in] const char* Format,[in] char* Args );
@@ -1125,7 +1125,7 @@ interface IDebugControl : IUnknown {
 	HRESULT ControlledOutputVaList([in]  unsigned long OutputControl,[in] unsigned long Mask,[in] const char* Format,[in] char* Args );
 	HRESULT OutputPrompt([in]  unsigned long OutputControl,[in,optional] const char* Format,[optional] SAFEARRAY(VARIANT) );
 	HRESULT OutputPromptVaList([in]  unsigned long OutputControl,[in,optional] const char* Format,[in,optional] char* Args );
-	HRESULT GetPromptText([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
+	HRESULT GetPromptText([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
 	HRESULT OutputCurrentState([in]  unsigned long OutputControl,[in] unsigned long Flags );
 	HRESULT OutputVersionInformation([in]  unsigned long OutputControl );
 	HRESULT GetNotifyEventHandle([out]  unsigned __int64* Handle );
@@ -1145,13 +1145,13 @@ interface IDebugControl : IUnknown {
 	HRESULT GetNumberPossibleExecutingProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetPossibleExecutingProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
 	HRESULT GetNumberProcessors([out]  unsigned long* Number );
-	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] char* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
+	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] void* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
 	HRESULT GetPageSize([out]  unsigned long* Size );
 	HRESULT IsPointer64Bit(  );
 	HRESULT ReadBugCheckData([out]  unsigned long* Code,[out] unsigned __int64* Arg1,[out] unsigned __int64* Arg2,[out] unsigned __int64* Arg3,[out] unsigned __int64* Arg4 );
 	HRESULT GetNumberSupportedProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetSupportedProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
-	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] char* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
+	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] void* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetEffectiveProcessorType([out]  unsigned long* Type );
 	HRESULT SetEffectiveProcessorType([in]  unsigned long Type );
 	HRESULT GetExecutionStatus([out]  unsigned long* Status );
@@ -1214,12 +1214,12 @@ interface IDebugControl2 : IUnknown {
 	HRESULT SetInterrupt([in]  unsigned long Flags );
 	HRESULT GetInterruptTimeout([out]  unsigned long* Seconds );
 	HRESULT SetInterruptTimeout([in]  unsigned long Seconds );
-	HRESULT GetLogFile([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
+	HRESULT GetLogFile([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
 	HRESULT OpenLogFile([in]  const char* File,[in] BOOL Append );
 	HRESULT CloseLogFile(  );
 	HRESULT GetLogMask([out]  unsigned long* Mask );
 	HRESULT SetLogMask([in]  unsigned long Mask );
-	HRESULT Input([out]  char* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
+	HRESULT Input([out]  void* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
 	HRESULT ReturnInput([in]  const char* Buffer );
 	HRESULT Output([in]  unsigned long Mask,[in] const char* Format, SAFEARRAY(VARIANT) );
 	HRESULT OutputVaList([in]  unsigned long Mask,[in] const char* Format,[in] char* Args );
@@ -1227,7 +1227,7 @@ interface IDebugControl2 : IUnknown {
 	HRESULT ControlledOutputVaList([in]  unsigned long OutputControl,[in] unsigned long Mask,[in] const char* Format,[in] char* Args );
 	HRESULT OutputPrompt([in]  unsigned long OutputControl,[in,optional] const char* Format,[optional] SAFEARRAY(VARIANT) );
 	HRESULT OutputPromptVaList([in]  unsigned long OutputControl,[in,optional] const char* Format,[in,optional] char* Args );
-	HRESULT GetPromptText([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
+	HRESULT GetPromptText([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
 	HRESULT OutputCurrentState([in]  unsigned long OutputControl,[in] unsigned long Flags );
 	HRESULT OutputVersionInformation([in]  unsigned long OutputControl );
 	HRESULT GetNotifyEventHandle([out]  unsigned __int64* Handle );
@@ -1247,13 +1247,13 @@ interface IDebugControl2 : IUnknown {
 	HRESULT GetNumberPossibleExecutingProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetPossibleExecutingProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
 	HRESULT GetNumberProcessors([out]  unsigned long* Number );
-	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] char* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
+	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] void* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
 	HRESULT GetPageSize([out]  unsigned long* Size );
 	HRESULT IsPointer64Bit(  );
 	HRESULT ReadBugCheckData([out]  unsigned long* Code,[out] unsigned __int64* Arg1,[out] unsigned __int64* Arg2,[out] unsigned __int64* Arg3,[out] unsigned __int64* Arg4 );
 	HRESULT GetNumberSupportedProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetSupportedProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
-	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] char* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
+	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] void* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetEffectiveProcessorType([out]  unsigned long* Type );
 	HRESULT SetEffectiveProcessorType([in]  unsigned long Type );
 	HRESULT GetExecutionStatus([out]  unsigned long* Status );
@@ -1306,7 +1306,7 @@ interface IDebugControl2 : IUnknown {
 	HRESULT GetCurrentSystemUpTime([out]  unsigned long* UpTime );
 	HRESULT GetDumpFormatFlags([out]  unsigned long* FormatFlags );
 	HRESULT GetNumberTextReplacements([out]  unsigned long* NumRepl );
-	HRESULT GetTextReplacement([in,optional]  const char* SrcText,[in,optional] unsigned long Index,[out,optional] void* SrcBuffer,[in,optional] unsigned long SrcBufferSize,[out,optional] unsigned long* SrcSize,[out,optional] char* DstBuffer,[in,optional] unsigned long DstBufferSize,[out,optional] unsigned long* DstSize );
+	HRESULT GetTextReplacement([in,optional]  const char* SrcText,[in,optional] unsigned long Index,[out,optional] void* SrcBuffer,[in,optional] unsigned long SrcBufferSize,[out,optional] unsigned long* SrcSize,[out,optional] void* DstBuffer,[in,optional] unsigned long DstBufferSize,[out,optional] unsigned long* DstSize );
 	HRESULT SetTextReplacement([in]  const char* SrcText,[in,optional] const char* DstText );
 	HRESULT RemoveTextReplacements(  );
 	HRESULT OutputTextReplacements([in]  unsigned long OutputControl,[in] unsigned long Flags );
@@ -1334,12 +1334,12 @@ interface IDebugControl3 : IUnknown {
 	HRESULT SetInterrupt([in]  unsigned long Flags );
 	HRESULT GetInterruptTimeout([out]  unsigned long* Seconds );
 	HRESULT SetInterruptTimeout([in]  unsigned long Seconds );
-	HRESULT GetLogFile([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
+	HRESULT GetLogFile([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
 	HRESULT OpenLogFile([in]  const char* File,[in] BOOL Append );
 	HRESULT CloseLogFile(  );
 	HRESULT GetLogMask([out]  unsigned long* Mask );
 	HRESULT SetLogMask([in]  unsigned long Mask );
-	HRESULT Input([out]  char* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
+	HRESULT Input([out]  void* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
 	HRESULT ReturnInput([in]  const char* Buffer );
 	HRESULT Output([in]  unsigned long Mask,[in] const char* Format, SAFEARRAY(VARIANT) );
 	HRESULT OutputVaList([in]  unsigned long Mask,[in] const char* Format,[in] char* Args );
@@ -1347,7 +1347,7 @@ interface IDebugControl3 : IUnknown {
 	HRESULT ControlledOutputVaList([in]  unsigned long OutputControl,[in] unsigned long Mask,[in] const char* Format,[in] char* Args );
 	HRESULT OutputPrompt([in]  unsigned long OutputControl,[in,optional] const char* Format,[optional] SAFEARRAY(VARIANT) );
 	HRESULT OutputPromptVaList([in]  unsigned long OutputControl,[in,optional] const char* Format,[in,optional] char* Args );
-	HRESULT GetPromptText([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
+	HRESULT GetPromptText([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
 	HRESULT OutputCurrentState([in]  unsigned long OutputControl,[in] unsigned long Flags );
 	HRESULT OutputVersionInformation([in]  unsigned long OutputControl );
 	HRESULT GetNotifyEventHandle([out]  unsigned __int64* Handle );
@@ -1367,13 +1367,13 @@ interface IDebugControl3 : IUnknown {
 	HRESULT GetNumberPossibleExecutingProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetPossibleExecutingProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
 	HRESULT GetNumberProcessors([out]  unsigned long* Number );
-	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] char* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
+	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] void* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
 	HRESULT GetPageSize([out]  unsigned long* Size );
 	HRESULT IsPointer64Bit(  );
 	HRESULT ReadBugCheckData([out]  unsigned long* Code,[out] unsigned __int64* Arg1,[out] unsigned __int64* Arg2,[out] unsigned __int64* Arg3,[out] unsigned __int64* Arg4 );
 	HRESULT GetNumberSupportedProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetSupportedProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
-	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] char* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
+	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] void* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetEffectiveProcessorType([out]  unsigned long* Type );
 	HRESULT SetEffectiveProcessorType([in]  unsigned long Type );
 	HRESULT GetExecutionStatus([out]  unsigned long* Status );
@@ -1426,7 +1426,7 @@ interface IDebugControl3 : IUnknown {
 	HRESULT GetCurrentSystemUpTime([out]  unsigned long* UpTime );
 	HRESULT GetDumpFormatFlags([out]  unsigned long* FormatFlags );
 	HRESULT GetNumberTextReplacements([out]  unsigned long* NumRepl );
-	HRESULT GetTextReplacement([in,optional]  const char* SrcText,[in,optional] unsigned long Index,[out,optional] void* SrcBuffer,[in,optional] unsigned long SrcBufferSize,[out,optional] unsigned long* SrcSize,[out,optional] char* DstBuffer,[in,optional] unsigned long DstBufferSize,[out,optional] unsigned long* DstSize );
+	HRESULT GetTextReplacement([in,optional]  const char* SrcText,[in,optional] unsigned long Index,[out,optional] void* SrcBuffer,[in,optional] unsigned long SrcBufferSize,[out,optional] unsigned long* SrcSize,[out,optional] void* DstBuffer,[in,optional] unsigned long DstBufferSize,[out,optional] unsigned long* DstSize );
 	HRESULT SetTextReplacement([in]  const char* SrcText,[in,optional] const char* DstText );
 	HRESULT RemoveTextReplacements(  );
 	HRESULT OutputTextReplacements([in]  unsigned long OutputControl,[in] unsigned long Flags );
@@ -1438,7 +1438,7 @@ interface IDebugControl3 : IUnknown {
 	HRESULT SetExpressionSyntax([in]  unsigned long Flags );
 	HRESULT SetExpressionSyntaxByName([in]  const char* AbbrevName );
 	HRESULT GetNumberExpressionSyntaxes([out]  unsigned long* Number );
-	HRESULT GetExpressionSyntaxNames([in]  unsigned long Index,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] char* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
+	HRESULT GetExpressionSyntaxNames([in]  unsigned long Index,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] void* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetNumberEvents([out]  unsigned long* Events );
 	HRESULT GetEventIndexDescription([in]  unsigned long Index,[in] unsigned long Which,[in,optional] char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* DescSize );
 	HRESULT GetCurrentEventIndex([out]  unsigned long* Index );
@@ -1470,12 +1470,12 @@ interface IDebugControl4 : IUnknown {
 	HRESULT SetInterrupt([in]  unsigned long Flags );
 	HRESULT GetInterruptTimeout([out]  unsigned long* Seconds );
 	HRESULT SetInterruptTimeout([in]  unsigned long Seconds );
-	HRESULT GetLogFile([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
+	HRESULT GetLogFile([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] bool* Append );
 	HRESULT OpenLogFile([in]  const char* File,[in] BOOL Append );
 	HRESULT CloseLogFile(  );
 	HRESULT GetLogMask([out]  unsigned long* Mask );
 	HRESULT SetLogMask([in]  unsigned long Mask );
-	HRESULT Input([out]  char* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
+	HRESULT Input([out]  void* Buffer,[in] unsigned long BufferSize,[out,optional] unsigned long* InputSize );
 	HRESULT ReturnInput([in]  const char* Buffer );
 	HRESULT Output([in]  unsigned long Mask,[in] const char* Format, SAFEARRAY(VARIANT) );
 	HRESULT OutputVaList([in]  unsigned long Mask,[in] const char* Format,[in] char* Args );
@@ -1483,7 +1483,7 @@ interface IDebugControl4 : IUnknown {
 	HRESULT ControlledOutputVaList([in]  unsigned long OutputControl,[in] unsigned long Mask,[in] const char* Format,[in] char* Args );
 	HRESULT OutputPrompt([in]  unsigned long OutputControl,[in,optional] const char* Format,[optional] SAFEARRAY(VARIANT) );
 	HRESULT OutputPromptVaList([in]  unsigned long OutputControl,[in,optional] const char* Format,[in,optional] char* Args );
-	HRESULT GetPromptText([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
+	HRESULT GetPromptText([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* TextSize );
 	HRESULT OutputCurrentState([in]  unsigned long OutputControl,[in] unsigned long Flags );
 	HRESULT OutputVersionInformation([in]  unsigned long OutputControl );
 	HRESULT GetNotifyEventHandle([out]  unsigned __int64* Handle );
@@ -1503,13 +1503,13 @@ interface IDebugControl4 : IUnknown {
 	HRESULT GetNumberPossibleExecutingProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetPossibleExecutingProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
 	HRESULT GetNumberProcessors([out]  unsigned long* Number );
-	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] char* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
+	HRESULT GetSystemVersion([out]  unsigned long* PlatformId,[out] unsigned long* Major,[out] unsigned long* Minor,[out,optional] void* ServicePackString,[in,optional] unsigned long ServicePackStringSize,[out,optional] unsigned long* ServicePackStringUsed,[out,optional] unsigned long* ServicePackNumber,[out,optional] void* BuildString,[in,optional] unsigned long BuildStringSize,[out,optional] unsigned long* BuildStringUsed );
 	HRESULT GetPageSize([out]  unsigned long* Size );
 	HRESULT IsPointer64Bit(  );
 	HRESULT ReadBugCheckData([out]  unsigned long* Code,[out] unsigned __int64* Arg1,[out] unsigned __int64* Arg2,[out] unsigned __int64* Arg3,[out] unsigned __int64* Arg4 );
 	HRESULT GetNumberSupportedProcessorTypes([out]  unsigned long* Number );
 	HRESULT GetSupportedProcessorTypes([in]  unsigned long Start,[in] unsigned long Count,[out] unsigned long* Types );
-	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] char* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
+	HRESULT GetProcessorTypeNames([in]  unsigned long Type,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] void* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetEffectiveProcessorType([out]  unsigned long* Type );
 	HRESULT SetEffectiveProcessorType([in]  unsigned long Type );
 	HRESULT GetExecutionStatus([out]  unsigned long* Status );
@@ -1562,7 +1562,7 @@ interface IDebugControl4 : IUnknown {
 	HRESULT GetCurrentSystemUpTime([out]  unsigned long* UpTime );
 	HRESULT GetDumpFormatFlags([out]  unsigned long* FormatFlags );
 	HRESULT GetNumberTextReplacements([out]  unsigned long* NumRepl );
-	HRESULT GetTextReplacement([in,optional]  const char* SrcText,[in,optional] unsigned long Index,[out,optional] void* SrcBuffer,[in,optional] unsigned long SrcBufferSize,[out,optional] unsigned long* SrcSize,[out,optional] char* DstBuffer,[in,optional] unsigned long DstBufferSize,[out,optional] unsigned long* DstSize );
+	HRESULT GetTextReplacement([in,optional]  const char* SrcText,[in,optional] unsigned long Index,[out,optional] void* SrcBuffer,[in,optional] unsigned long SrcBufferSize,[out,optional] unsigned long* SrcSize,[out,optional] void* DstBuffer,[in,optional] unsigned long DstBufferSize,[out,optional] unsigned long* DstSize );
 	HRESULT SetTextReplacement([in]  const char* SrcText,[in,optional] const char* DstText );
 	HRESULT RemoveTextReplacements(  );
 	HRESULT OutputTextReplacements([in]  unsigned long OutputControl,[in] unsigned long Flags );
@@ -1574,7 +1574,7 @@ interface IDebugControl4 : IUnknown {
 	HRESULT SetExpressionSyntax([in]  unsigned long Flags );
 	HRESULT SetExpressionSyntaxByName([in]  const char* AbbrevName );
 	HRESULT GetNumberExpressionSyntaxes([out]  unsigned long* Number );
-	HRESULT GetExpressionSyntaxNames([in]  unsigned long Index,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] char* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
+	HRESULT GetExpressionSyntaxNames([in]  unsigned long Index,[out,optional] void* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] void* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetNumberEvents([out]  unsigned long* Events );
 	HRESULT GetEventIndexDescription([in]  unsigned long Index,[in] unsigned long Which,[in,optional] char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* DescSize );
 	HRESULT GetCurrentEventIndex([out]  unsigned long* Index );
@@ -1619,7 +1619,7 @@ interface IDebugControl4 : IUnknown {
 	HRESULT SetExpressionSyntaxByNameWide([in]  const wchar_t* AbbrevName );
 	HRESULT GetExpressionSyntaxNamesWide([in]  unsigned long Index,[out,optional] wchar_t* FullNameBuffer,[in,optional] unsigned long FullNameBufferSize,[out,optional] unsigned long* FullNameSize,[out,optional] wchar_t* AbbrevNameBuffer,[in,optional] unsigned long AbbrevNameBufferSize,[out,optional] unsigned long* AbbrevNameSize );
 	HRESULT GetEventIndexDescriptionWide([in]  unsigned long Index,[in] unsigned long Which,[in,optional] wchar_t* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* DescSize );
-	HRESULT GetLogFile2([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] unsigned long* Flags );
+	HRESULT GetLogFile2([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] unsigned long* Flags );
 	HRESULT OpenLogFile2([in]  const char* File,[in] unsigned long Flags );
 	HRESULT GetLogFile2Wide([out,optional]  wchar_t* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* FileSize,[out,optional] unsigned long* Flags );
 	HRESULT OpenLogFile2Wide([in]  const wchar_t* File,[in] unsigned long Flags );
@@ -2368,7 +2368,7 @@ interface IDebugSymbols : IUnknown {
 	HRESULT GetModuleByIndex([in]  unsigned long Index,[out] unsigned __int64* Base );
 	HRESULT GetModuleByModuleName([in]  const char* Name,[in] unsigned long StartIndex,[out,optional] unsigned long* Index,[out,optional] unsigned __int64* Base );
 	HRESULT GetModuleByOffset([in]  unsigned __int64 Offset,[in] unsigned long StartIndex,[out,optional] unsigned long* Index,[out,optional] unsigned __int64* Base );
-	HRESULT GetModuleNames([in]  unsigned long Index,[in] unsigned __int64 Base,[out,optional] void* ImageNameBuffer,[in,optional] unsigned long ImageNameBufferSize,[out,optional] unsigned long* ImageNameSize,[out,optional] char* ModuleNameBuffer,[in,optional] unsigned long ModuleNameBufferSize,[out,optional] unsigned long* ModuleNameSize,[out,optional] char* LoadedImageNameBuffer,[in,optional] unsigned long LoadedImageNameBufferSize,[out,optional] unsigned long* LoadedImageNameSize );
+	HRESULT GetModuleNames([in]  unsigned long Index,[in] unsigned __int64 Base,[out,optional] void* ImageNameBuffer,[in,optional] unsigned long ImageNameBufferSize,[out,optional] unsigned long* ImageNameSize,[out,optional] void* ModuleNameBuffer,[in,optional] unsigned long ModuleNameBufferSize,[out,optional] unsigned long* ModuleNameSize,[out,optional] void* LoadedImageNameBuffer,[in,optional] unsigned long LoadedImageNameBufferSize,[out,optional] unsigned long* LoadedImageNameSize );
 	HRESULT GetModuleParameters([in]  unsigned long Count,[in,optional] unsigned __int64* Bases,[in,optional] unsigned long Start,[out,optional] PDEBUG_MODULE_PARAMETERS Params );
 	HRESULT GetSymbolModule([in]  const char* Symbol,[out] unsigned __int64* Base );
 	HRESULT GetTypeName([in]  unsigned __int64 Module,[in] unsigned long TypeId,[in,out,optional] void* NameBuffer,[in,optional] unsigned long NameBufferSize,[out,optional] unsigned long* NameSize );
@@ -2392,13 +2392,13 @@ interface IDebugSymbols : IUnknown {
 	HRESULT GetNextSymbolMatch([in]  unsigned __int64 Handle,[out,optional] void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* MatchSize,[out,optional] unsigned __int64* Offset );
 	HRESULT EndSymbolMatch([in]  unsigned __int64 Handle );
 	HRESULT Reload([in]  const char* Module );
-	HRESULT GetSymbolPath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetSymbolPath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT SetSymbolPath([in]  const char* Path );
 	HRESULT AppendSymbolPath([in]  const char* Addition );
-	HRESULT GetImagePath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetImagePath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT SetImagePath([in]  const char* Path );
 	HRESULT AppendImagePath([in]  const char* Addition );
-	HRESULT GetSourcePath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetSourcePath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT GetSourcePathElement([in]  unsigned long Index,[out,optional] void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ElementSize );
 	HRESULT SetSourcePath([in]  const char* Path );
 	HRESULT AppendSourcePath([in]  const char* Addition );
@@ -2435,7 +2435,7 @@ interface IDebugSymbols2 : IUnknown {
 	HRESULT GetModuleByIndex([in]  unsigned long Index,[out] unsigned __int64* Base );
 	HRESULT GetModuleByModuleName([in]  const char* Name,[in] unsigned long StartIndex,[out,optional] unsigned long* Index,[out,optional] unsigned __int64* Base );
 	HRESULT GetModuleByOffset([in]  unsigned __int64 Offset,[in] unsigned long StartIndex,[out,optional] unsigned long* Index,[out,optional] unsigned __int64* Base );
-	HRESULT GetModuleNames([in]  unsigned long Index,[in] unsigned __int64 Base,[out,optional] void* ImageNameBuffer,[in,optional] unsigned long ImageNameBufferSize,[out,optional] unsigned long* ImageNameSize,[out,optional] char* ModuleNameBuffer,[in,optional] unsigned long ModuleNameBufferSize,[out,optional] unsigned long* ModuleNameSize,[out,optional] char* LoadedImageNameBuffer,[in,optional] unsigned long LoadedImageNameBufferSize,[out,optional] unsigned long* LoadedImageNameSize );
+	HRESULT GetModuleNames([in]  unsigned long Index,[in] unsigned __int64 Base,[out,optional] void* ImageNameBuffer,[in,optional] unsigned long ImageNameBufferSize,[out,optional] unsigned long* ImageNameSize,[out,optional] void* ModuleNameBuffer,[in,optional] unsigned long ModuleNameBufferSize,[out,optional] unsigned long* ModuleNameSize,[out,optional] void* LoadedImageNameBuffer,[in,optional] unsigned long LoadedImageNameBufferSize,[out,optional] unsigned long* LoadedImageNameSize );
 	HRESULT GetModuleParameters([in]  unsigned long Count,[in,optional] unsigned __int64* Bases,[in,optional] unsigned long Start,[out,optional] PDEBUG_MODULE_PARAMETERS Params );
 	HRESULT GetSymbolModule([in]  const char* Symbol,[out] unsigned __int64* Base );
 	HRESULT GetTypeName([in]  unsigned __int64 Module,[in] unsigned long TypeId,[in,out,optional] void* NameBuffer,[in,optional] unsigned long NameBufferSize,[out,optional] unsigned long* NameSize );
@@ -2459,13 +2459,13 @@ interface IDebugSymbols2 : IUnknown {
 	HRESULT GetNextSymbolMatch([in]  unsigned __int64 Handle,[out,optional] void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* MatchSize,[out,optional] unsigned __int64* Offset );
 	HRESULT EndSymbolMatch([in]  unsigned __int64 Handle );
 	HRESULT Reload([in]  const char* Module );
-	HRESULT GetSymbolPath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetSymbolPath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT SetSymbolPath([in]  const char* Path );
 	HRESULT AppendSymbolPath([in]  const char* Addition );
-	HRESULT GetImagePath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetImagePath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT SetImagePath([in]  const char* Path );
 	HRESULT AppendImagePath([in]  const char* Addition );
-	HRESULT GetSourcePath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetSourcePath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT GetSourcePathElement([in]  unsigned long Index,[out,optional] void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ElementSize );
 	HRESULT SetSourcePath([in]  const char* Path );
 	HRESULT AppendSourcePath([in]  const char* Addition );
@@ -2542,7 +2542,7 @@ interface IDebugSymbols3 : IUnknown {
 	HRESULT GetModuleByIndex([in]  unsigned long Index,[out] unsigned __int64* Base );
 	HRESULT GetModuleByModuleName([in]  const char* Name,[in] unsigned long StartIndex,[out,optional] unsigned long* Index,[out,optional] unsigned __int64* Base );
 	HRESULT GetModuleByOffset([in]  unsigned __int64 Offset,[in] unsigned long StartIndex,[out,optional] unsigned long* Index,[out,optional] unsigned __int64* Base );
-	HRESULT GetModuleNames([in]  unsigned long Index,[in] unsigned __int64 Base,[out,optional] void* ImageNameBuffer,[in,optional] unsigned long ImageNameBufferSize,[out,optional] unsigned long* ImageNameSize,[out,optional] char* ModuleNameBuffer,[in,optional] unsigned long ModuleNameBufferSize,[out,optional] unsigned long* ModuleNameSize,[out,optional] char* LoadedImageNameBuffer,[in,optional] unsigned long LoadedImageNameBufferSize,[out,optional] unsigned long* LoadedImageNameSize );
+	HRESULT GetModuleNames([in]  unsigned long Index,[in] unsigned __int64 Base,[out,optional] void* ImageNameBuffer,[in,optional] unsigned long ImageNameBufferSize,[out,optional] unsigned long* ImageNameSize,[out,optional] void* ModuleNameBuffer,[in,optional] unsigned long ModuleNameBufferSize,[out,optional] unsigned long* ModuleNameSize,[out,optional] void* LoadedImageNameBuffer,[in,optional] unsigned long LoadedImageNameBufferSize,[out,optional] unsigned long* LoadedImageNameSize );
 	HRESULT GetModuleParameters([in]  unsigned long Count,[in,optional] unsigned __int64* Bases,[in,optional] unsigned long Start,[out,optional] PDEBUG_MODULE_PARAMETERS Params );
 	HRESULT GetSymbolModule([in]  const char* Symbol,[out] unsigned __int64* Base );
 	HRESULT GetTypeName([in]  unsigned __int64 Module,[in] unsigned long TypeId,[in,out,optional] void* NameBuffer,[in,optional] unsigned long NameBufferSize,[out,optional] unsigned long* NameSize );
@@ -2566,13 +2566,13 @@ interface IDebugSymbols3 : IUnknown {
 	HRESULT GetNextSymbolMatch([in]  unsigned __int64 Handle,[out,optional] void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* MatchSize,[out,optional] unsigned __int64* Offset );
 	HRESULT EndSymbolMatch([in]  unsigned __int64 Handle );
 	HRESULT Reload([in]  const char* Module );
-	HRESULT GetSymbolPath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetSymbolPath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT SetSymbolPath([in]  const char* Path );
 	HRESULT AppendSymbolPath([in]  const char* Addition );
-	HRESULT GetImagePath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetImagePath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT SetImagePath([in]  const char* Path );
 	HRESULT AppendImagePath([in]  const char* Addition );
-	HRESULT GetSourcePath([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
+	HRESULT GetSourcePath([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* PathSize );
 	HRESULT GetSourcePathElement([in]  unsigned long Index,[out,optional] void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ElementSize );
 	HRESULT SetSourcePath([in]  const char* Path );
 	HRESULT AppendSourcePath([in]  const char* Addition );
@@ -2689,7 +2689,7 @@ interface IDebugSystemObjects : IUnknown {
 	HRESULT GetProcessIdBySystemId([in]  unsigned long SysId,[out] unsigned long* Id );
 	HRESULT GetCurrentProcessHandle([out]  unsigned __int64* Handle );
 	HRESULT GetProcessIdByHandle([in]  unsigned __int64 Handle,[out] unsigned long* Id );
-	HRESULT GetCurrentProcessExecutableName([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
+	HRESULT GetCurrentProcessExecutableName([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
 };
 
 ///////////////////////////////////////////////////////////
@@ -2727,7 +2727,7 @@ interface IDebugSystemObjects2 : IUnknown {
 	HRESULT GetProcessIdBySystemId([in]  unsigned long SysId,[out] unsigned long* Id );
 	HRESULT GetCurrentProcessHandle([out]  unsigned __int64* Handle );
 	HRESULT GetProcessIdByHandle([in]  unsigned __int64 Handle,[out] unsigned long* Id );
-	HRESULT GetCurrentProcessExecutableName([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
+	HRESULT GetCurrentProcessExecutableName([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
 	HRESULT GetCurrentProcessUpTime([out]  unsigned long* UpTime );
 	HRESULT GetImplicitThreadDataOffset([out]  unsigned __int64* Offset );
 	HRESULT SetImplicitThreadDataOffset([in]  unsigned __int64 Offset );
@@ -2770,7 +2770,7 @@ interface IDebugSystemObjects3 : IUnknown {
 	HRESULT GetProcessIdBySystemId([in]  unsigned long SysId,[out] unsigned long* Id );
 	HRESULT GetCurrentProcessHandle([out]  unsigned __int64* Handle );
 	HRESULT GetProcessIdByHandle([in]  unsigned __int64 Handle,[out] unsigned long* Id );
-	HRESULT GetCurrentProcessExecutableName([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
+	HRESULT GetCurrentProcessExecutableName([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
 	HRESULT GetCurrentProcessUpTime([out]  unsigned long* UpTime );
 	HRESULT GetImplicitThreadDataOffset([out]  unsigned __int64* Offset );
 	HRESULT SetImplicitThreadDataOffset([in]  unsigned __int64 Offset );
@@ -2784,7 +2784,7 @@ interface IDebugSystemObjects3 : IUnknown {
 	HRESULT GetTotalNumberThreadsAndProcesses([out]  unsigned long* TotalThreads,[out] unsigned long* TotalProcesses,[out] unsigned long* LargestProcessThreads,[out] unsigned long* LargestSystemThreads,[out] unsigned long* LargestSystemProcesses );
 	HRESULT GetCurrentSystemServer([out]  unsigned __int64* Server );
 	HRESULT GetSystemByServer([in]  unsigned __int64 Server,[out] unsigned long* Id );
-	HRESULT GetCurrentSystemServerName([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* NameSize );
+	HRESULT GetCurrentSystemServerName([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* NameSize );
 };
 
 ///////////////////////////////////////////////////////////
@@ -2822,7 +2822,7 @@ interface IDebugSystemObjects4 : IUnknown {
 	HRESULT GetProcessIdBySystemId([in]  unsigned long SysId,[out] unsigned long* Id );
 	HRESULT GetCurrentProcessHandle([out]  unsigned __int64* Handle );
 	HRESULT GetProcessIdByHandle([in]  unsigned __int64 Handle,[out] unsigned long* Id );
-	HRESULT GetCurrentProcessExecutableName([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
+	HRESULT GetCurrentProcessExecutableName([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
 	HRESULT GetCurrentProcessUpTime([out]  unsigned long* UpTime );
 	HRESULT GetImplicitThreadDataOffset([out]  unsigned __int64* Offset );
 	HRESULT SetImplicitThreadDataOffset([in]  unsigned __int64 Offset );
@@ -2836,7 +2836,7 @@ interface IDebugSystemObjects4 : IUnknown {
 	HRESULT GetTotalNumberThreadsAndProcesses([out]  unsigned long* TotalThreads,[out] unsigned long* TotalProcesses,[out] unsigned long* LargestProcessThreads,[out] unsigned long* LargestSystemThreads,[out] unsigned long* LargestSystemProcesses );
 	HRESULT GetCurrentSystemServer([out]  unsigned __int64* Server );
 	HRESULT GetSystemByServer([in]  unsigned __int64 Server,[out] unsigned long* Id );
-	HRESULT GetCurrentSystemServerName([out,optional]  char* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* NameSize );
+	HRESULT GetCurrentSystemServerName([out,optional]  void* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* NameSize );
 	HRESULT GetCurrentProcessExecutableNameWide([out,optional]  wchar_t* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* ExeSize );
 	HRESULT GetCurrentSystemServerNameWide([out,optional]  wchar_t* Buffer,[in,optional] unsigned long BufferSize,[out,optional] unsigned long* NameSize );
 };
