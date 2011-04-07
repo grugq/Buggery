@@ -1,5 +1,6 @@
 
 import idebug
+import sys
 
 # thinking about doing this via contextmanager
 # with output(dbg.execute(cmd))
@@ -21,56 +22,77 @@ class CollectOutputCallbacks(idebug.OutputCallbacks):
     def get_output(self):
         return self._collection
 
-class CollectEventCallbacks(idebug.EventCallbacks):
+class DebugEventHandler(idebug.EventHandler):
     INTEREST_MASK = (idebug.DbgEng.DEBUG_EVENT_BREAKPOINT |
+                     idebug.DbgEng.DEBUG_EVENT_CREATEPROCESS |
                      idebug.DbgEng.DEBUG_EVENT_EXCEPTION)
+
+    def __init__(self, interestmask):
+        if interestmask is not None:
+            self.INTEREST_MASK = interestmask
+        self.handlers = {
+            'INTERESTMASK': self.get_interest_mask,
+            'BREAKPOINT': self.on_breakpoint
+        }
+        self._bp_callbacks = {}
 
     def get_interest_mask(self):
         return self.INTEREST_MASK
+    def set_interest_mask(self, interest_mask):
+        self.INTEREST_MASK = interest_mask
+    def add_interest(self, interest):
+        self.INTEREST_MASK |= interest
+
+    def on_breakpoint(self, bp):
+        print "BP:", repr(bp)
+
+        if bp.GetId() in self._bp_callbacks:
+            return self._bp_callbacks[bp.GetId()](bp)
 
     def handle_event(self, eventtype, event):
-        pass
+        print ">>", eventtype, repr(event)
 
-    def onGetInterestMask(self):
-        return self.get_interest_mask()
+        try:
+            retval = None
+            retval = self.handlers[eventtype](event)
+        except KeyError:
+            retval = idebug.GO_HANDLED
+        except Exception, e:
+            sys.stderr.write("%r" % e)
+            retval = idebug.GO_IGNORED
 
-    def onBreakpoint(self, bp):
-        return self.handle_event('BREAKPOINT', bp)
+        if retval is None:
+            retval = idebug.GO_HANDLED
 
-    def onChangeDebuggeeState(self, flags, arg):
-        return self.handle_event('DEBUGEESTATE', (flags, arg))
+        return retval
 
-    def onChangeEngineState(self, flags, arg):
-        return self.handle_event('ENGINESTATE', (flags, arg))
+    def set_handler(self, eventtype, handler):
+        self.handlers[eventtype] = handler
 
-    def onException(self, exception):
-        return self.handle_event('EXCEPTION', exception)
-
-    def onLoadModule(self, imageFileHandle, baseOffset, moduleSize, moduleName,
-                     imageName, checkSum, timeDateStamp):
-        return self.handle_event('LOAD', ())
-
-    def onUnloadModule(self, imageBaseName, baseOffset):
-        return self.handle_event('UNLOAD', (imageBaseName, baseOffset))
-
-    def onCreateProcess(self, imageFileHandle, handle, baseOffset, moduleSize,
-                       moduleName, imageName, checkSum, timeDateStamp,
-                       initialThreadHandle, threadDataOffset, startOffset): pass
-
-    def onExitProcess(self, exitCode): pass
-    def onSessionStatus(self, status): pass
-    def onChangeSymbolState(self, flags, arg): pass
-    def onSystemError(self, error, level): pass
-    def onCreateThread(self,handle, dataOffset, startOffset): pass
-    def onExitThread(self, exitCode): pass
 
 class Debugger(object):
-    def __init__(self):
+    def __init__(self, interestmask=None):
         self._output = CollectOutputCallbacks()
-        self.client = idebug.Client(output_cb=self._output)
+        self._events = DebugEventHandler(interestmask)
+        self.client = idebug.Client(output_cb=self._output,
+                                   event_cb=self._events)
+
         self.dataspaces = idebug.DataSpaces(self.client)
         self.registers = idebug.Registers(self.client)
         self.control = idebug.Control(self.client)
+
+    def set_event_handler(self, eventtype, handler):
+        self._events.set_handler(eventtype, handler)
+        # should adjust set_interest_mask too
+
+    def add_interest(self, interest):
+        self._events.add_interest(interest)
+        self.client.set_event_callbacks(self._events)
+
+    def set_interest_mask(self, interest_mask):
+        # Assuming that we can just add new interests like this
+        self._events.set_interest_mask(interest_mask)
+        return self.client.set_event_callbacks(self._events)
 
     def execute(self, cmd):
         self._output.start()
@@ -79,17 +101,19 @@ class Debugger(object):
         self._output.stop()
         return self._output.get_output()
 
-    def step_into(self):
-        pass
-    def step_over(self):
-        pass
-    def step_branch(self):
-        pass
+    def step_into(self): pass
+    def step_over(self): pass
+    def step_branch(self): pass
 
-    def breakpoint(self, address, callback, hardware=False, oneshot=False):
-        bpid = self.control.set_breakpoint(address, hardware, oneshot)
-        self._handler.breakpoints[bpid] = callback
-        return bpid
+    def breakpoint(self, address, callback,oneshot=False,private=True,cmd=None):
+        bp = self.control.set_breakpoint(address, oneshot, private, cmd)
+        self._events._bp_callbacks[bp.GetId()] = callback
+        return bp.GetId()
+
+    def watchpoint(self, address, size, callback, mode='rwx', oneshot=False,private=True,cmd=None):
+        bp = self.control.set_watchpoint(address, size, mode, oneshot, private, cmd)
+        self._events._bp_callbacks[bp.GetId()] = callback
+        return bp.GetId()
 
     def wait_for_event(self):
         return self.control.wait_for_event()

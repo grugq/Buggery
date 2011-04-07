@@ -56,11 +56,23 @@ class DebugOutputCallback(CoClass):
         self._proxy.onOutput(mask, text)
         return S_OK
 
+
 ExceptionEvent = namedtuple("ExceptionEvent",
                  "code,flags,record,address,information,firstchance")
-Breakpoint = namedtuple("Breakpoint", "offset,id,breaktype,proctype,flags,datasize,dataaccesstype,passcount,currentpasscount,matchthread,commandsize,offsetexpressionsize")
 ExceptionInformation = namedtuple("ExceptionInformation",
             "code, flags, record, address, nparams, av_flag, av_address, info")
+
+ChangeSymbolStateEvent = namedtuple("ChangeSymbolStateEvent", "flags, arg")
+ChangeDebuggeeStateEvent = namedtuple("ChangeDebuggeeStateEvent", "flags, arg")
+ChangeEngineStateEvent = namedtuple("ChangeEngineStateEvent", "flags, arg")
+ChangeSymbolStateEvent = namedtuple("ChangeSymbolStateEvent", "flags, arg")
+LoadModuleEvent = namedtuple("LoadModuleEvent",
+    "imageFileHandle, baseOffset, moduleSize, moduleName, imageName, checkSum, timeDateStamp")
+UnloadModuleEvent = namedtuple("UnloadModuleEvent", "imageBaseName, baseOffset")
+CreateProcessEvent = namedtuple("CreateProcessEvent",
+"imageFileHandle, handle, baseOffset, moduleSize, moduleName, imageName, checkSum, timeDateStamp, initialThreadHandle, threadDataOffset, startOffset")
+SystemErrorEvent = namedtuple("SystemErrorEvent", "error, level")
+CreateThreadEvent = namedtuple("CreateThreadEvent", "handle, dataOffset, startOffset")
 
 class EventCallbacks(object):
     def onGetInterestMask(self): pass
@@ -80,6 +92,64 @@ class EventCallbacks(object):
     def onSystemError(self, error, level): pass
     def onCreateThread(self,handle, dataOffset, startOffset): pass
     def onExitThread(self, exitCode): pass
+
+class EventHandler(EventCallbacks):
+    def handle_event(self, evtype, event):
+        pass
+
+    def onGetInterestMask(self):
+        return self.handle_event('INTERESTMASK', None)
+
+    def onChangeDebuggeeState(self, flags, arg):
+        event = ChangeDebuggeeStateEvent(flags, arg)
+        return self.handle_event('DEBUGEESTATE', event)
+
+    def onChangeEngineState(self, flags, arg):
+        event = ChangeEngineStateEvent(flags, arg)
+        return self.handle_event('ENGINESTATE', (flags, arg))
+
+    def onException(self, exception):
+        return self.handle_event('EXCEPTION', exception)
+
+    def onLoadModule(self, imageFileHandle, baseOffset, moduleSize, moduleName,
+                     imageName, checkSum, timeDateStamp):
+        event = LoadModuleEvent(imageFileHandle, baseOffset, moduleSize,
+                                moduleName, imageName, checkSum, timeDateStamp)
+        return self.handle_event('LOADMODULE', event)
+
+    def onUnloadModule(self, imageBaseName, baseOffset):
+        event = UnloadModuleEvent(imageBaseName, baseOffset)
+        return self.handle_event('UNLOADMODULE', event)
+
+    def onCreateProcess(self, imageFileHandle, handle, baseOffset, moduleSize,
+                       moduleName, imageName, checkSum, timeDateStamp,
+                       initialThreadHandle, threadDataOffset, startOffset):
+        event = CreateProcessEvent(imageFileHandle, handle, baseOffset,
+                                   moduleSize, moduleName, imageName, checkSum,
+                                   timeDateStamp, initialThreadHandle,
+                                   threadDataOffset, startOffset)
+        return self.handle_event('CREATEPROCESS', event)
+
+    def onExitProcess(self, exitCode):
+        return self.handle_event('EXITPROCESS', exitCode)
+
+    def onSessionStatus(self, status):
+        return self.handle_event('SESSIONSTATUS', status)
+
+    def onChangeSymbolState(self, flags, arg):
+        event = ChangeSymbolStateEvent(flags, arg)
+        return self.handle_event('SYMBOLSTATE', event)
+
+    def onSystemError(self, error, level):
+        event = SystemErrorEvent(error, level)
+        return self.handle_event('SYSTEMERROR', event)
+
+    def onCreateThread(self,handle, dataOffset, startOffset):
+        event = CreateThreadEvent(handle, dataOffset, startOffset)
+        return self.handle_event('CREATETHREAD', event)
+
+    def onExitThread(self, exitCode):
+        return self.handle_event('EXITTHREAD', exitCode)
 
 
 class DebugEventCallbacks(CoClass):
@@ -103,11 +173,6 @@ class DebugEventCallbacks(CoClass):
         return self._proxy.onGetInterestMask()
 
     def IDebugEventCallbacks_Breakpoint(self, bp):
-        p = bp.getParams()
-        bp = Breakpoint(p.Offset, p.Id, p.BreakType, p.ProcType, p.Flags,
-                        p.DataSize, p.DataAccessType, p.PassCount,
-                        p.CurrentPassCount, p.MatchThread, p.CommandSize,
-                        p.OffsetExpressionSize)
         return self._proxy.onBreakpoint(bp)
 
     def IDebugEventCallbacks_ChangeDebuggeeState(self, flags, arg):
@@ -127,12 +192,13 @@ class DebugEventCallbacks(CoClass):
     def IDebugEventCallbacks_LoadModule(self, imageFileHandle, baseOffset,
                                         moduleSize, moduleName, imageName,
                                         checkSum, timeDateStamp):
-        return self._proxy.onLoadModule(imageFileHandle, baseOffset, moduleSize,
-                                      moduleName, imageName, checkSum,
-                                      timeDateStamp)
+        return self._proxy.onLoadModule(imageFileHandle, baseOffset,
+                                        moduleSize, moduleName, imageName,
+                                        checkSum, timeDateStamp)
 
     def IDebugEventCallbacks_UnloadModule(self, imageBaseName, baseOffset):
-        return self._proxy.onUnloadModule(imageBaseName, baseOffset)
+        event = UnloadModuleEvent(imageBaseName, baseOffset)
+        return self._proxy.onUnloadModule(event)
 
     def IDebugEventCallbacks_CreateProcess(self, imageFileHandle, handle,
                                            baseOffset, moduleSize,
@@ -150,7 +216,7 @@ class DebugEventCallbacks(CoClass):
         return self._proxy.onExitProcess(exitCode)
 
     def IDebugEventCallbacks_SessionStatus(self, status):
-        return self._proxy.onSessionStatus(unknown, status)
+        return self._proxy.onSessionStatus(status)
 
     def IDebugEventCallbacks_ChangeSymbolState(self, flags, arg):
         return self._proxy.onChangeSymbolState(flags, arg)
@@ -244,6 +310,17 @@ class Registers(object):
             raise AttributeError("No such register: %s" % name)
         return self.get_value_by_name(name)
 
+class BreakpointList(object):
+    def __init__(self, control):
+        self._control = control
+    def __len__(self):
+        return self._control.GetNumberBreakpoints()
+    def __getitem__(self, index):
+        if index < len(self):
+            bp = self._control.GetBreakpointByIndex(index)
+        else:
+            bp = self._control.GetBreakpointById(index)
+        return BreakpointControl(bp)
 
 class Control(object):
     def __init__(self, client):
