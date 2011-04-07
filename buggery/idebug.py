@@ -64,7 +64,7 @@ class Watchpoint(Breakpoint):
     def size(self):
         size, accesstype = self.bp.GetDataParameters()
         return size
-    @property.setter
+    @size.setter
     def set_size(self, size):
         old, accesstype = self.bp.GetDataParameters()
         self.bp.SetDataParameters(size, accesstype)
@@ -162,6 +162,10 @@ class EventHandler(EventCallbacks):
         return self.handle_event('INTERESTMASK', None)
 
     def onBreakpoint(self, bp):
+        if bp.GetType() == DbgEng.DEBUG_BREAKPOINT_CODE:
+            bp = Breakpoint(bp)
+        else:
+            bp = Watchpoint(bp)
         return self.handle_event('BREAKPOINT', bp)
 
     def onChangeDebuggeeState(self, flags, arg):

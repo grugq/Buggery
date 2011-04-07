@@ -46,8 +46,8 @@ class DebugEventHandler(idebug.EventHandler):
     def on_breakpoint(self, bp):
         print "BP:", repr(bp)
 
-        if bp.GetId() in self._bp_callbacks:
-            return self._bp_callbacks[bp.GetId()](bp)
+        if bp.id in self._bp_callbacks:
+            return self._bp_callbacks[bp.id](bp)
 
     def handle_event(self, eventtype, event):
         print ">>", eventtype, repr(event)
@@ -113,13 +113,13 @@ class Debugger(object):
 
     def breakpoint(self, address, callback,oneshot=False,private=True,cmd=None):
         bp = self.control.set_breakpoint(address, oneshot, private, cmd)
-        self._events._bp_callbacks[bp.GetId()] = callback
-        return bp.GetId()
+        self._events._bp_callbacks[bp.id] = callback
+        return bp
 
     def watchpoint(self, address, size, callback, mode='rwx', oneshot=False,private=True,cmd=None):
         bp = self.control.set_watchpoint(address, size, mode, oneshot, private, cmd)
-        self._events._bp_callbacks[bp.GetId()] = callback
-        return bp.GetId()
+        self._events._bp_callbacks[bp.id] = callback
+        return bp
 
     def wait_for_event(self):
         return self.control.wait_for_event()
