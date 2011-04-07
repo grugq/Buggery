@@ -16,19 +16,78 @@ GO_HANDLED = DbgEng.DEBUG_STATUS_GO_HANDLED
 GO_NOT_HANDLED = DbgEng.DEBUG_STATUS_GO_NOT_HANDLED
 GO_IGNORED = DbgEng.DEBUG_STATUS_IGNORE_EVENT
 
-class BreakpointControl(object):
+
+class Breakpoint(object):
     def __init__(self, bp):
         self.bp = bp
+    @property
+    def id(self):
+        return self.bp.GetId()
+
     def enable(self):
-        self.bp.SetF
+        self.bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ENABLED)
+    def disable(self):
+        self.bp.RemoveFlags(DbgEng.DEBUG_BREAKPOINT_ENABLED)
+    def isenabled(self):
+        return self.bp.GetFlags() & DbgEng.DEBUG_BREAKPOINT_ENABLED
+
+    @property
+    def command(self):
+        return self.bp.GetCommand()
+    @command.setter
     def set_command(self, cmd):
         self.bp.SetCommand(cmd)
-    def get_command(self):
-        return self.bp.GetCommand()
-    def set_mem_size(self, size):
-        self.bp.SetDataParameters(size, mode)
-    def set_access_mode(self, mode):
-        self.bp.SetDataParameters(size, mode)
+
+    @property
+    def passcount(self):
+        return self.bp.GetPassCount()
+    @passcount.setter
+    def set_passcount(self, count):
+        self.bp.SetPassCount(count)
+
+    @property
+    def offset(self):
+        return self.bp.GetOffset()
+    @offset.setter
+    def set_offset(self, offset):
+        self.bp.SetOffset(offset)
+
+    @property
+    def offsetexpression(self):
+        return self.bp.GetOffsetExpression()
+    @offsetexpression.setter
+    def set_offsetexpression(self, offexpr):
+        self.bp.SetOffsetExpression(offexpr)
+
+class Watchpoint(Breakpoint):
+    @property
+    def size(self):
+        size, accesstype = self.bp.GetDataParameters()
+        return size
+    @property.setter
+    def set_size(self, size):
+        old, accesstype = self.bp.GetDataParameters()
+        self.bp.SetDataParameters(size, accesstype)
+
+    @property
+    def accesstype(self):
+        size, access = self.GetDataParameters()
+        rv = ""
+        rv += 'r' if access & DbgEng.DEBUG_BREAK_READ else '-'
+        rv += 'w' if access & DbgEng.DEBUG_BREAK_WRITE else '-'
+        rv += 'x' if access & DbgEng.DEBUG_BREAK_EXECUTE else '-'
+        return rv
+    @accesstype.setter
+    def set_accesstype(self, access):
+        size, old = self.GetDataParameters()
+        accesstype = 0
+        if 'r' in access:
+            accesstype |= DbgEng.DEBUG_BREAK_READ
+        if 'w' in access:
+            accesstype |= DbgEng.DEBUG_BREAK_WRITE
+        if 'x' in access:
+            accesstype |= DbgEng.DEBUG_BREAK_EXECUTE
+        self.bp.SetDataParameters(size, accesstype)
 
 
 class OutputCallbacks(object):
@@ -74,6 +133,7 @@ CreateProcessEvent = namedtuple("CreateProcessEvent",
 SystemErrorEvent = namedtuple("SystemErrorEvent", "error, level")
 CreateThreadEvent = namedtuple("CreateThreadEvent", "handle, dataOffset, startOffset")
 
+
 class EventCallbacks(object):
     def onGetInterestMask(self): pass
     def onBreakpoint(self, bp): pass
@@ -93,12 +153,16 @@ class EventCallbacks(object):
     def onCreateThread(self,handle, dataOffset, startOffset): pass
     def onExitThread(self, exitCode): pass
 
+
 class EventHandler(EventCallbacks):
     def handle_event(self, evtype, event):
         pass
 
     def onGetInterestMask(self):
         return self.handle_event('INTERESTMASK', None)
+
+    def onBreakpoint(self, bp):
+        return self.handle_event('BREAKPOINT', bp)
 
     def onChangeDebuggeeState(self, flags, arg):
         event = ChangeDebuggeeStateEvent(flags, arg)
@@ -400,7 +464,7 @@ class Control(object):
 
         bp.SetDataParameters(size, bpmode)
         bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ENABLED)
-        return bp
+        return Watchpoint(bp)
 
     def set_breakpoint(self, address, oneshot=False, private=False, cmd=None):
         def get_address(address):
@@ -423,10 +487,9 @@ class Control(object):
             bp.SetOffsetExpression(address)
 
         bp.AddFlags(DbgEng.DEBUG_BREAKPOINT_ENABLED)
+        return Breakpoint(bp)
 
-        return bp
-
-    def get_num_breakpoints(self):
+    def get_number_breakpoints(self):
         return self._control.GetNumberBreakpoints()
     def get_breakpoint_by_index(self, ndx):
         bp = self._control.GetBreakpointByIndex(ndx)

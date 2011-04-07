@@ -24,7 +24,7 @@ class CollectOutputCallbacks(idebug.OutputCallbacks):
 
 class DebugEventHandler(idebug.EventHandler):
     INTEREST_MASK = (idebug.DbgEng.DEBUG_EVENT_BREAKPOINT |
-                     idebug.DbgEng.DEBUG_EVENT_CREATEPROCESS |
+                     idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS |
                      idebug.DbgEng.DEBUG_EVENT_EXCEPTION)
 
     def __init__(self, interestmask):
@@ -36,7 +36,7 @@ class DebugEventHandler(idebug.EventHandler):
         }
         self._bp_callbacks = {}
 
-    def get_interest_mask(self):
+    def get_interest_mask(self, ignored):
         return self.INTEREST_MASK
     def set_interest_mask(self, interest_mask):
         self.INTEREST_MASK = interest_mask
@@ -82,8 +82,14 @@ class Debugger(object):
         self.control = idebug.Control(self.client)
 
     def set_event_handler(self, eventtype, handler):
+        interests = {
+            'BREAKPOINT': idebug.DbgEng.DEBUG_EVENT_BREAKPOINT,
+            'CREATEPROCESS': idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS,
+        }
         self._events.set_handler(eventtype, handler)
         # should adjust set_interest_mask too
+        if eventtype in interests:
+            self.add_interest(interests[eventtype])
 
     def add_interest(self, interest):
         self._events.add_interest(interest)
