@@ -525,10 +525,55 @@ class DataSpaces(object):
     def __init__(self, client):
         self._client = client
         query_i = self._client.get_com_interface
+        # XXX I think I only need dataspace4 here. It inherits from
+        # everything else
         self._data_space  = query_i(interface=DbgEng.IDebugDataSpaces)
         self._data_space2 = query_i(interface=DbgEng.IDebugDataSpaces2)
         self._data_space3 = query_i(interface=DbgEng.IDebugDataSpaces3)
         self._data_space4 = query_i(interface=DbgEng.IDebugDataSpaces4)
+
+    def tags(self):
+        # TODO:
+        # itertags() -> (guid, size)
+        # property tags -> dict like, guid : data
+        retval = []
+        handle = self._data_spaces3.StartEnumTagged()
+        while True:
+            try:
+                guid, size = self._data_spaces3.GetNextTagged(handle)
+            except:
+                self._data_spaces3.EndEnumTagged(handle)
+                break
+            retval.append((guid, size))
+        return retval
+
+    def query(self, address):
+        # I think this might be wrong... dont I need to pass in a buffer
+        # for the MEMINFO struct?
+        meminfo = self._data_space2.QueryVirtual(address)
+        return meminfo
+
+    def search(self, pattern, base, size, alignment=1):
+        '''search(self, pattern, base, size, alignment) -> address
+
+        pattern: byte pattern to search for
+        base: address to start searching from
+        size: size of memory region to search
+        alignment: byte alignment, 1, 2, 4, 8
+
+        Note: the length of `pattern` must be a multiple of `alignment`
+
+        If the byte pattern cant be found, then a ValueError is raised
+        '''
+
+        if len(pattern) % alignment:
+            raise RuntimeError("pattern is not a multiple of alignment")
+        offset = self._data_space4.SearchVirtual(base, size, pattern, len(pattern), alignment)
+        return offset
+
+    def find_valid_region(self, address, size):
+        validbase, validsize = self._data_space4.GetValidRegionVirtual(address,size)
+        return (validbase, validsize)
 
     def read(self, address, count):
         buf = ct.create_string_buffer(count)
@@ -542,7 +587,15 @@ class DataSpaces(object):
         return buf.raw[:nbytes.value]
 
     def write(self, address, buf):
-        raise NotImplementedError("sorry, not done yet")
+        nbytes = ct.ulong()
+        f = self._data_space._IDebugDataSpace__com_WriteVirtualUncached
+
+        hresult = f(ct.c_ulonglong(address), ct.byref(buf), ct.c_ulong(len(buf)),
+                    ct.byref(nbytes))
+
+        if hresult != S_OK:
+            raise RuntimeError("Address Space Write FAIL: %d" % hresult)
+        return nbytes.value
 
     def search(self, pattern, address=None, length=None):
         raise NotImplementedError("sorry, not done yet")

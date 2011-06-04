@@ -22,6 +22,16 @@ class CollectOutputCallbacks(idebug.OutputCallbacks):
     def get_output(self):
         return self._collection
 
+    def __enter__(self):
+        self.start()
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
+        return False
+    def __str__(self):
+        return self.get_output()
+
+
 class DebugEventHandler(idebug.EventHandler):
     INTEREST_MASK = (idebug.DbgEng.DEBUG_EVENT_BREAKPOINT |
                      idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS |
@@ -42,10 +52,10 @@ class DebugEventHandler(idebug.EventHandler):
         self.INTEREST_MASK = interest_mask
     def add_interest(self, interest):
         self.INTEREST_MASK |= interest
+    def has_interest(self, interest):
+        return bool(self.INTEREST_MASK & interest)
 
     def on_breakpoint(self, bp):
-        print "BP:", repr(bp)
-
         if bp.id in self._bp_callbacks:
             return self._bp_callbacks[bp.id](bp)
 
@@ -67,6 +77,30 @@ class DebugEventHandler(idebug.EventHandler):
     def set_handler(self, eventtype, handler):
         self.handlers[eventtype] = handler
 
+class AddressSpace(object):
+    def __init__(self, dbg):
+        self.dbg = dbg
+    def __getitem__(self, offset):
+        if isinstance(offset, (slice,)):
+            address, count = offset.start, offset.stop-offset.start
+        else:
+            address, count = offset, 1
+        return self.dbg.dataspaces.read(address, count)
+    def __setitem__(self, offset, buf):
+        if isinstance(offset, (slice,)):
+            address, count = offset.start, offset.stop-offset.start
+            if len(buf) != count:
+                raise RuntimeError("Buffer size and slice range don't agree: %d != %d" % (len(buf), count))
+        else:
+            address, count = offset, len(buf)
+        num = self.dbg.dataspaces.write(offset, buf)
+
+        if num != count:
+            raise RuntimeError("Short write to memory %d < %d. Inconsistent state, bailing out...", num, count)
+        return self
+
+    def find(self, pattern, address, count, alignment=1):
+        return self.dbg.dataspaces.search(pattern, address, count, alignment)
 
 class Debugger(object):
     def __init__(self, interestmask=None):
@@ -86,7 +120,8 @@ class Debugger(object):
         }
         self._events.set_handler(eventtype, handler)
         # should adjust set_interest_mask too
-        if eventtype in interests:
+        if eventtype in interests \
+                and not self._events.has_interest(interest):
             self.add_interest(interests[eventtype])
 
     def add_interest(self, interest):
