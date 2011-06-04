@@ -121,7 +121,7 @@ class Debugger(object):
         self._events.set_handler(eventtype, handler)
         # should adjust set_interest_mask too
         if eventtype in interests \
-                and not self._events.has_interest(interest):
+                and not self._events.has_interest(interest[eventtype]):
             self.add_interest(interests[eventtype])
 
     def add_interest(self, interest):
