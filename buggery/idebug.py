@@ -341,6 +341,11 @@ class Registers(object):
 
         self._registers.SetValue(self._map[name], ct.byref(rval))
 
+    def getstack(self):
+        return self._registers.GetStackOffset()
+    def getframe(self):
+        return self._registers.GetFrameOffset()
+
     def keys(self):
         if self._map is None:
             self._build_map()
@@ -477,7 +482,10 @@ class Control(object):
                     address = int(address)
                 except ValueError:
                     if address.startswith("0x"):
-                        address = int(address, 16)
+                        try:
+                            address = int(address, 16)
+                        except ValueError:
+                            address = None
                     else:
                         address = None
             return address
@@ -509,6 +517,9 @@ class Control(object):
         else:
             raise RuntimeError("Kinda need either an index or an ID, you know?")
         return self._control.RemoveBreakpoint(bp)
+
+    def is_pointer_64bit(self):
+        return self._control.IsPointer64Bit() == S_OK
 
     def add_extension(self, path):
         return self._control.AddExtention(path, 0)
@@ -600,6 +611,30 @@ class DataSpaces(object):
     def search(self, pattern, address=None, length=None):
         raise NotImplementedError("sorry, not done yet")
 
+    def unpack(self, fmt, addr):
+        st = struct.Struct(fmt)
+        buf = self._data_spaces.read(addr, st.size)
+        return st.unpack(buf)
+    def pack(self, fmt, addr, *args):
+        st = struct.Struct(fmt)
+        buf = st.pack(fmt, *args)
+        return self._data_spaces.write(addr, buf)
+    # stupid convenience functions
+    def get_int8(self, addr): return self.unpack('c', addr)
+    def put_int8(self, addr, val): return self.pack('c', addr, val)
+    def get_uint8(self, addr): return self.unpack('C', addr)
+    def put_uint8(self, addr, val): return self.pack('C', addr, val)
+    def get_int16(self, addr): return self.unpack('h', addr)
+    def put_int16(self, addr, val): return self.pack('h', addr, val)
+    def get_uint16(self, addr): return self.unpack('H', addr)
+    def put_uint16(self, addr, val): return self.pack('H', addr, val)
+    def get_int32(self, addr): return self.unpack('i', addr)
+    def put_int32(self, addr, val): return self.pack('i', addr, val)
+    def get_uint32(self, addr): return self.unpack('I', addr)
+    def put_uint32(self, addr, val): return self.pack('I', addr, val)
+    def get_int64(self, addr): return self.unpack('q', addr)
+    def put_int64(self, addr, val): return self.pack('Q', addr, val)
+
 
 class Symbols(object):
     DEFAULT_PATH=r'''SRV*%SYSTEMROOT%\localsymbols*http://msdl.microsoft.com/download/symbols'''
@@ -619,6 +654,27 @@ class SystemObjects(object):
         self._system_objects  = query_i(interface=DbgEng.IDebugSystemObjects)
         self._system_objects2 = query_i(interface=DbgEng.IDebugSystemObjects2)
         self._system_objects3 = query_i(interface=DbgEng.IDebugSystemObjects3)
+
+    def get_event_thread(self):
+        return self._system_objects.GetEventThread()
+    def get_event_process(self):
+        return self._system_objects.GetEventProcess()
+    def get_current_thread_id(self):
+        return self._system_objects.GetCurrentThreadId()
+    def set_current_thread_id(self, tid):
+        return self._system_objects.SetCurrentThreadId(tid)
+    def get_current_process_id(self):
+        return self._system_objects.GetCurrentProcessId()
+    def set_current_process_id(self, pid):
+        return self._system_objects.SetCurrentProcessId(pid)
+
+    def get_number_threads(self):
+        return self._system_objects.GetNumberThreads()
+    num_threads = property(fget=get_number_threads)
+
+    def get_thread_teb(self):
+        addr = self._system_objects.GetCurrentThreadDataOffset()
+        return addr
 
 
 class Client(object):

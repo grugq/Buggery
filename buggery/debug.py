@@ -154,6 +154,21 @@ class Debugger(object):
         self._events._bp_callbacks[bp.id] = callback
         return bp
 
+    def read_args(self, argstr, use_frame=True):
+        '''read_args( argstr ) -> tuple(arg0, arg1, ..., argN)
+
+        argstr := struct.unpack() string of argument types
+        '''
+        if use_frame:
+            stack = self.registers.getframe()
+        else:
+            stack = self.registers.getstack()
+        # need to adjust stack ptr up by sizeof(return address)
+        ret_addr_size = 4
+        if self.control.is_pointer_64bit():
+            ret_addr_size += 4
+        return self.dataspaces.unpack(argstr, stack + ret_addr_size)
+
     def wait_for_event(self):
         return self.control.wait_for_event()
 
