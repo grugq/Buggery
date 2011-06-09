@@ -59,6 +59,10 @@ class Breakpoint(object):
     def set_offsetexpression(self, offexpr):
         self.bp.SetOffsetExpression(offexpr)
 
+    def set_match_thread_id(self, tid):
+        self.bp.SetMatchThreadId(tid)
+
+
 class Watchpoint(Breakpoint):
     @property
     def size(self):
@@ -531,6 +535,10 @@ class Control(object):
     def call_extension(self, handle, extension, args):
         return self._control.CallExtension(handle, extension, args)
 
+    def get_return_offset(self):
+        return self._control.GetReturnOffset()
+    get_return_address = get_return_offset
+
 
 class DataSpaces(object):
     def __init__(self, client):
@@ -633,7 +641,19 @@ class DataSpaces(object):
     def get_uint32(self, addr): return self.unpack('I', addr)
     def put_uint32(self, addr, val): return self.pack('I', addr, val)
     def get_int64(self, addr): return self.unpack('q', addr)
-    def put_int64(self, addr, val): return self.pack('Q', addr, val)
+    def put_int64(self, addr, val): return self.pack('q', addr, val)
+    def get_uint64(self, addr): return self.unpack('Q', addr)
+    def put_uint64(self, addr, val): return self.pack('Q', addr, val)
+    def get_pointer(self, addr):
+        # ??? how to get 64bit ???
+        if is_64_bit():
+            return self.get_uint64(addr)
+        return self.get_uint32(addr)
+    def put_pointer(self, addr, value):
+        # ??? how to get 64bit ???
+        if is_64_bit():
+            return self.put_uint64(addr, value)
+        return self.put_uint32(addr, value)
 
 
 class Symbols(object):
@@ -657,8 +677,10 @@ class SystemObjects(object):
 
     def get_event_thread(self):
         return self._system_objects.GetEventThread()
+    event_thread = property(fget=get_event_thread)
     def get_event_process(self):
         return self._system_objects.GetEventProcess()
+    event_process = property(fget=get_event_process)
     def get_current_thread_id(self):
         return self._system_objects.GetCurrentThreadId()
     def set_current_thread_id(self, tid):

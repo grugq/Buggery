@@ -1,6 +1,7 @@
 
 import idebug
 import sys
+from contextlib import contextmanager
 
 # thinking about doing this via contextmanager
 # with output(dbg.execute(cmd))
@@ -22,12 +23,13 @@ class CollectOutputCallbacks(idebug.OutputCallbacks):
     def get_output(self):
         return self._collection
 
-    def __enter__(self):
+    def collect(self):
         self.start()
-        return self
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop()
-        return False
+        try:
+            yield self
+        finally:
+            self.stop()
+
     def __str__(self):
         return self.get_output()
 
@@ -57,7 +59,8 @@ class DebugEventHandler(idebug.EventHandler):
 
     def on_breakpoint(self, bp):
         if bp.id in self._bp_callbacks:
-            return self._bp_callbacks[bp.id](bp)
+            handler,args,kwargs = self._bp_callbacks[bp.id]
+            return handler(bp, *args, **kwargs)
 
     def handle_event(self, eventtype, event):
         try:
@@ -134,19 +137,19 @@ class Debugger(object):
         return self.client.set_event_callbacks(self._events)
 
     def execute(self, cmd):
-        self._output.start()
-        self.control.execute(cmd)
-        self.client.flush_output()
-        self._output.stop()
-        return self._output.get_output()
+        with self._output.collect() as output:
+            self.control.execute.cmd()
+            self.client.flush_output()
+            return str(output)
 
     def step_into(self): pass
     def step_over(self): pass
     def step_branch(self): pass
 
-    def breakpoint(self, address, callback,oneshot=False,private=True,cmd=None):
+    def breakpoint(self, address, callback,oneshot=False,private=True,cmd=None,
+                  args=None, kwargs=None):
         bp = self.control.set_breakpoint(address, oneshot, private, cmd)
-        self._events._bp_callbacks[bp.id] = callback
+        self._events._bp_callbacks[bp.id] = callback,args,kwargs
         return bp
 
     def watchpoint(self, address, size, callback, mode='rwx', oneshot=False,private=True,cmd=None):
@@ -154,19 +157,22 @@ class Debugger(object):
         self._events._bp_callbacks[bp.id] = callback
         return bp
 
-    def read_args(self, argstr, use_frame=True):
+    @property
+    def ptr_size(self):
+        return 8 if self.control.is_pointer_64bit() else 8
+
+    def read_args(self, argstr, use_frame=False):
         '''read_args( argstr ) -> tuple(arg0, arg1, ..., argN)
 
         argstr := struct.unpack() string of argument types
         '''
+        # common case: bpx at the start of a function, before the prologue
         if use_frame:
             stack = self.registers.getframe()
         else:
             stack = self.registers.getstack()
         # need to adjust stack ptr up by sizeof(return address)
-        ret_addr_size = 4
-        if self.control.is_pointer_64bit():
-            ret_addr_size += 4
+        ret_addr_size = self.ptr_size
         return self.dataspaces.unpack(argstr, stack + ret_addr_size)
 
     def wait_for_event(self):
