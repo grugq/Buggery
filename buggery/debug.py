@@ -44,7 +44,7 @@ class DebugEventHandler(idebug.EventHandler):
             self.INTEREST_MASK = interestmask
         self.handlers = {
             'INTERESTMASK': self.get_interest_mask,
-            'BREAKPOINT': self.on_breakpoint
+            'BREAKPOINT': self._on_breakpoint
         }
         self._bp_callbacks = {}
 
@@ -57,7 +57,7 @@ class DebugEventHandler(idebug.EventHandler):
     def has_interest(self, interest):
         return bool(self.INTEREST_MASK & interest)
 
-    def on_breakpoint(self, bp):
+    def _on_breakpoint(self, bp):
         if bp.id in self._bp_callbacks:
             handler,args,kwargs = self._bp_callbacks[bp.id]
             return handler(bp, *args, **kwargs)
@@ -104,6 +104,41 @@ class AddressSpace(object):
 
     def find(self, pattern, address, count, alignment=1):
         return self.dbg.dataspaces.search(pattern, address, count, alignment)
+    def unpack(self, fmt, addr):
+        st = struct.Struct(fmt)
+        buf = self.dbg.dataspaces.read(addr, st.size)
+        return st.unpack(buf)
+    def pack(self, fmt, addr, *args):
+        st = struct.Struct(fmt)
+        buf = st.pack(fmt, *args)
+        return self.dbg.dataspaces.write(addr, buf)
+    # stupid convenience functions
+    def get_int8(self, addr): return self.unpack('c', addr)
+    def put_int8(self, addr, val): return self.pack('c', addr, val)
+    def get_uint8(self, addr): return self.unpack('C', addr)
+    def put_uint8(self, addr, val): return self.pack('C', addr, val)
+    def get_int16(self, addr): return self.unpack('h', addr)
+    def put_int16(self, addr, val): return self.pack('h', addr, val)
+    def get_uint16(self, addr): return self.unpack('H', addr)
+    def put_uint16(self, addr, val): return self.pack('H', addr, val)
+    def get_int32(self, addr): return self.unpack('i', addr)
+    def put_int32(self, addr, val): return self.pack('i', addr, val)
+    def get_uint32(self, addr): return self.unpack('I', addr)
+    def put_uint32(self, addr, val): return self.pack('I', addr, val)
+    def get_int64(self, addr): return self.unpack('q', addr)
+    def put_int64(self, addr, val): return self.pack('q', addr, val)
+    def get_uint64(self, addr): return self.unpack('Q', addr)
+    def put_uint64(self, addr, val): return self.pack('Q', addr, val)
+    def get_pointer(self, addr):
+        if self.dbg.control.is_pointer_64bit():
+            return self.get_uint64(addr)
+        return self.get_uint32(addr)
+    def put_pointer(self, addr, value):
+        # ??? how to get 64bit ???
+        if self.dbg.control.is_pointer_64bit():
+            return self.put_uint64(addr, value)
+        return self.put_uint32(addr, value)
+
 
 class Debugger(object):
     def __init__(self, interestmask=None):
@@ -115,6 +150,8 @@ class Debugger(object):
         self.dataspaces = idebug.DataSpaces(self.client)
         self.registers = idebug.Registers(self.client)
         self.control = idebug.Control(self.client)
+        #
+        self.addrspace = AddressSpace(self)
 
     def set_event_handler(self, eventtype, handler):
         interests = {

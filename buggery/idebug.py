@@ -619,41 +619,6 @@ class DataSpaces(object):
     def search(self, pattern, address=None, length=None):
         raise NotImplementedError("sorry, not done yet")
 
-    def unpack(self, fmt, addr):
-        st = struct.Struct(fmt)
-        buf = self._data_spaces.read(addr, st.size)
-        return st.unpack(buf)
-    def pack(self, fmt, addr, *args):
-        st = struct.Struct(fmt)
-        buf = st.pack(fmt, *args)
-        return self._data_spaces.write(addr, buf)
-    # stupid convenience functions
-    def get_int8(self, addr): return self.unpack('c', addr)
-    def put_int8(self, addr, val): return self.pack('c', addr, val)
-    def get_uint8(self, addr): return self.unpack('C', addr)
-    def put_uint8(self, addr, val): return self.pack('C', addr, val)
-    def get_int16(self, addr): return self.unpack('h', addr)
-    def put_int16(self, addr, val): return self.pack('h', addr, val)
-    def get_uint16(self, addr): return self.unpack('H', addr)
-    def put_uint16(self, addr, val): return self.pack('H', addr, val)
-    def get_int32(self, addr): return self.unpack('i', addr)
-    def put_int32(self, addr, val): return self.pack('i', addr, val)
-    def get_uint32(self, addr): return self.unpack('I', addr)
-    def put_uint32(self, addr, val): return self.pack('I', addr, val)
-    def get_int64(self, addr): return self.unpack('q', addr)
-    def put_int64(self, addr, val): return self.pack('q', addr, val)
-    def get_uint64(self, addr): return self.unpack('Q', addr)
-    def put_uint64(self, addr, val): return self.pack('Q', addr, val)
-    def get_pointer(self, addr):
-        # ??? how to get 64bit ???
-        if is_64_bit():
-            return self.get_uint64(addr)
-        return self.get_uint32(addr)
-    def put_pointer(self, addr, value):
-        # ??? how to get 64bit ???
-        if is_64_bit():
-            return self.put_uint64(addr, value)
-        return self.put_uint32(addr, value)
 
 
 class Symbols(object):
