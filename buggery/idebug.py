@@ -710,11 +710,10 @@ class Client(object):
         self._client.CreateProcess(0, CommandLine=cmd_line, CreateFlags=flags)
 
     def attach_process(self, pid, flags=None):
+        flags = DbgEng.DEBUG_ATTACH_DEFAULT
         if flags is not None:
-            flags = DbgEng.DEBUG_ATTACH_DEFAULT | flags
-        else:
-            flags = DbgEng.DEBUG_ATTACH_DEFAULT
-            
+            flags |= flags
+
         self._client.AttachProcess(0, ProcessId=pid, AttachFlags=flags)
 
     def open_dumpfile(self, path):

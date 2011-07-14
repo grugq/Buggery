@@ -43,6 +43,7 @@ class DebugEventHandler(idebug.EventHandler):
         self.handlers = {
             'INTERESTMASK': self.get_interest_mask,
             'BREAKPOINT': self._on_breakpoint
+            'EXCEPTION': idebug.DbgEng.DEBUG_EVENT_EXCEPTION
         }
         self._bp_callbacks = {}
 
@@ -174,10 +175,10 @@ class Debugger(object):
         return self.client.set_event_callbacks(self._events)
 
     def execute(self, cmd):
-        with self._output.collect() as output:
+        with self._output.collect():
             self.control.execute(cmd)
             self.client.flush_output()
-            return str(output)
+            return str(self._output)
 
     def step_into(self): pass
     def step_over(self): pass
