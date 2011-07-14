@@ -622,7 +622,7 @@ class DataSpaces(object):
 
 
 class Symbols(object):
-    DEFAULT_PATH=r'''SRV*%SYSTEMROOT%\localsymbols*http://msdl.microsoft.com/download/symbols'''
+    DEFAULT_PATH=r'''SRV*%SYSTEMDRIVE%\localsymbols*http://msdl.microsoft.com/download/symbols'''
     def __init__(self, client):
         self._client = client
         query_i = self._client.get_com_interface
@@ -709,8 +709,12 @@ class Client(object):
 
         self._client.CreateProcess(0, CommandLine=cmd_line, CreateFlags=flags)
 
-    def attach_process(self, pid):
-        flags = DbgEng.DEBUG_ATTACH_DEFAULT
+    def attach_process(self, pid, flags=None):
+        if flags is not None:
+            flags = DbgEng.DEBUG_ATTACH_DEFAULT | flags
+        else:
+            flags = DbgEng.DEBUG_ATTACH_DEFAULT
+            
         self._client.AttachProcess(0, ProcessId=pid, AttachFlags=flags)
 
     def open_dumpfile(self, path):

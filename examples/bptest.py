@@ -26,9 +26,10 @@ class Tracer(object):
         self.dbg.spawn("notepad.exe")
         while True:
             try:
-                self.dbg.wait_for_event(100)
-            except:
+                self.dbg.wait_for_event()
+            except Exception, msg:
                 print "Got an exception, I don't want to play anymore."
+                print msg
                 break
 
 def main(args):

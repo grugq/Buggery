@@ -3,8 +3,6 @@ import idebug
 import sys
 from contextlib import contextmanager
 
-# thinking about doing this via contextmanager
-# with output(dbg.execute(cmd))
 
 class CollectOutputCallbacks(idebug.OutputCallbacks):
     def __init__(self):
@@ -23,6 +21,7 @@ class CollectOutputCallbacks(idebug.OutputCallbacks):
     def get_output(self):
         return self._collection
 
+    @contextmanager
     def collect(self):
         self.start()
         try:
@@ -31,8 +30,7 @@ class CollectOutputCallbacks(idebug.OutputCallbacks):
             self.stop()
 
     def __str__(self):
-        return self.get_output()
-
+         return "\n".join(self.get_output())
 
 class DebugEventHandler(idebug.EventHandler):
     INTEREST_MASK = (idebug.DbgEng.DEBUG_EVENT_BREAKPOINT |
@@ -104,6 +102,7 @@ class AddressSpace(object):
 
     def find(self, pattern, address, count, alignment=1):
         return self.dbg.dataspaces.search(pattern, address, count, alignment)
+        
     def unpack(self, fmt, addr):
         st = struct.Struct(fmt)
         buf = self.dbg.dataspaces.read(addr, st.size)
@@ -157,6 +156,7 @@ class Debugger(object):
         interests = {
             'BREAKPOINT': idebug.DbgEng.DEBUG_EVENT_BREAKPOINT,
             'CREATEPROCESS': idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS,
+            'EXCEPTION': idebug.DbgEng.DEBUG_EVENT_EXCEPTION
         }
         self._events.set_handler(eventtype, handler)
         # should adjust set_interest_mask too
@@ -175,7 +175,7 @@ class Debugger(object):
 
     def execute(self, cmd):
         with self._output.collect() as output:
-            self.control.execute.cmd()
+            self.control.execute(cmd)
             self.client.flush_output()
             return str(output)
 
@@ -222,8 +222,8 @@ class Debugger(object):
     def spawn(self, cmdline):
         self.client.create_process(cmdline)
 
-    def attach(self, pid):
-        self.client.attach_process(pid)
+    def attach(self, pid, flags=None):
+        self.client.attach_process(pid, flags)
 
     def detach(self):
         self.client.detach_processes()

@@ -37,6 +37,7 @@ def find_dbg_eng_path():
         return val
 
     def check_common_locations():
+
         # Lets try a few common places before failing.
         pgPaths = [
                 "c:\\",
@@ -45,6 +46,7 @@ def find_dbg_eng_path():
                 ]
         if "ProgramW6432" in os.environ:
                 pgPaths.append(os.environ["ProgramW6432"])
+        
         if "ProgramFiles(x86)" in os.environ:
                 pgPaths.append(os.environ["ProgramFiles(x86)"])
 
@@ -76,7 +78,7 @@ def load_dbgeng_dlls():
     global DBGENG_DLL, DBGHELP_DLL
 
     dllpath = find_dbg_eng_path()
-
+    
     DBGHELP_DLL = windll.LoadLibrary(os.path.join(dllpath, "dbghelp.dll"))
     DBGENG_DLL = windll.LoadLibrary(os.path.join(dllpath, "dbgeng.dll"))
 
