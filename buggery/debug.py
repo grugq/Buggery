@@ -42,8 +42,7 @@ class DebugEventHandler(idebug.EventHandler):
             self.INTEREST_MASK = interestmask
         self.handlers = {
             'INTERESTMASK': self.get_interest_mask,
-            'BREAKPOINT': self._on_breakpoint
-            'EXCEPTION': idebug.DbgEng.DEBUG_EVENT_EXCEPTION
+            'BREAKPOINT': self._on_breakpoint,
         }
         self._bp_callbacks = {}
 
