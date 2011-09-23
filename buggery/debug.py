@@ -250,4 +250,4 @@ class Debugger(object):
         self.client.open_dump_file(path)
 
     def writedump(self, path, mode=0):
-        self.client.write_dump_file(path, mode)
+        self.client.write_dumpfile(path, mode)
