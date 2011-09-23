@@ -102,7 +102,7 @@ class AddressSpace(object):
 
     def find(self, pattern, address, count, alignment=1):
         return self.dbg.dataspaces.search(pattern, address, count, alignment)
-        
+
     def unpack(self, fmt, addr):
         st = struct.Struct(fmt)
         buf = self.dbg.dataspaces.read(addr, st.size)
@@ -152,17 +152,32 @@ class Debugger(object):
         #
         self.addrspace = AddressSpace(self)
 
-    def set_event_handler(self, eventtype, handler):
+    def set_event_handler(self, eventtype, handler, add_interest=True):
+        # TODO handling a list of eventtypes ?
+        # XXX edge case mishadling - if not add_interest no set_interest at all
         interests = {
-            'BREAKPOINT': idebug.DbgEng.DEBUG_EVENT_BREAKPOINT,
-            'CREATEPROCESS': idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS,
-            'EXCEPTION': idebug.DbgEng.DEBUG_EVENT_EXCEPTION
+            'BREAKPOINT', idebug.DbgEng.DEBUG_EVENT_BREAKPOINT,
+            'EXCEPTION', idebug.DbgEng.DEBUG_EVENT_EXCEPTION,
+            'CREATE_THREAD', idebug.DbgEng.DEBUG_EVENT_CREATE_THREAD,
+            'THREAD', idebug.DbgEng.DEBUG_EVENT_EXIT_THREAD,
+            'CREATE_PROCESS', idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS,
+            'PROCESS', idebug.DbgEng.DEBUG_EVENT_EXIT_PROCESS,
+            'LOAD_MODULE', idebug.DbgEng.DEBUG_EVENT_LOAD_MODULE,
+            'UNLOAD_MODULE', idebug.DbgEng.DEBUG_EVENT_UNLOAD_MODULE,
+            'SYSTEM_ERROR', idebug.DbgEng.DEBUG_EVENT_SYSTEM_ERROR,
+            'SESSION_STATUS', idebug.DbgEng.DEBUG_EVENT_SESSION_STATUS,
+            'CHANGE_DEBUGGEE_STATE', idebug.DbgEng.DEBUG_EVENT_CHANGE_DEBUGGEE_STATE,
+            'CHANGE_ENGINE_STATE', idebug.DbgEng.DEBUG_EVENT_CHANGE_ENGINE_STATE,
+            'CHANGE_SYMBOL_STATE', idebug.DbgEng.DEBUG_EVENT_CHANGE_SYMBOL_STATE,
         }
+
+        if eventtype in interests:
+            eventtype = interests[eventtype]
+
         self._events.set_handler(eventtype, handler)
-        # should adjust set_interest_mask too
-        if eventtype in interests \
-                and not self._events.has_interest(interests[eventtype]):
-            self.add_interest(interests[eventtype])
+
+        if add_interest:
+            self.add_interest(eventtype)
 
     def add_interest(self, interest):
         self._events.add_interest(interest)
@@ -196,7 +211,7 @@ class Debugger(object):
 
     @property
     def ptr_size(self):
-        return 8 if self.control.is_pointer_64bit() else 8
+        return 8 if self.control.is_pointer_64bit() else 4
 
     def read_args(self, argstr, use_frame=False):
         '''read_args( argstr ) -> tuple(arg0, arg1, ..., argN)
