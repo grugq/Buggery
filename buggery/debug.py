@@ -156,19 +156,19 @@ class Debugger(object):
         # TODO handling a list of eventtypes ?
         # XXX edge case mishadling - if not add_interest no set_interest at all
         interests = {
-            'BREAKPOINT', idebug.DbgEng.DEBUG_EVENT_BREAKPOINT,
-            'EXCEPTION', idebug.DbgEng.DEBUG_EVENT_EXCEPTION,
-            'CREATE_THREAD', idebug.DbgEng.DEBUG_EVENT_CREATE_THREAD,
-            'THREAD', idebug.DbgEng.DEBUG_EVENT_EXIT_THREAD,
-            'CREATE_PROCESS', idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS,
-            'PROCESS', idebug.DbgEng.DEBUG_EVENT_EXIT_PROCESS,
-            'LOAD_MODULE', idebug.DbgEng.DEBUG_EVENT_LOAD_MODULE,
-            'UNLOAD_MODULE', idebug.DbgEng.DEBUG_EVENT_UNLOAD_MODULE,
-            'SYSTEM_ERROR', idebug.DbgEng.DEBUG_EVENT_SYSTEM_ERROR,
-            'SESSION_STATUS', idebug.DbgEng.DEBUG_EVENT_SESSION_STATUS,
-            'CHANGE_DEBUGGEE_STATE', idebug.DbgEng.DEBUG_EVENT_CHANGE_DEBUGGEE_STATE,
-            'CHANGE_ENGINE_STATE', idebug.DbgEng.DEBUG_EVENT_CHANGE_ENGINE_STATE,
-            'CHANGE_SYMBOL_STATE', idebug.DbgEng.DEBUG_EVENT_CHANGE_SYMBOL_STATE,
+            'BREAKPOINT': idebug.DbgEng.DEBUG_EVENT_BREAKPOINT,
+            'EXCEPTION': idebug.DbgEng.DEBUG_EVENT_EXCEPTION,
+            'CREATE_THREAD': idebug.DbgEng.DEBUG_EVENT_CREATE_THREAD,
+            'THREAD': idebug.DbgEng.DEBUG_EVENT_EXIT_THREAD,
+            'CREATE_PROCESS': idebug.DbgEng.DEBUG_EVENT_CREATE_PROCESS,
+            'PROCESS': idebug.DbgEng.DEBUG_EVENT_EXIT_PROCESS,
+            'LOAD_MODULE': idebug.DbgEng.DEBUG_EVENT_LOAD_MODULE,
+            'UNLOAD_MODULE': idebug.DbgEng.DEBUG_EVENT_UNLOAD_MODULE,
+            'SYSTEM_ERROR': idebug.DbgEng.DEBUG_EVENT_SYSTEM_ERROR,
+            'SESSION_STATUS': idebug.DbgEng.DEBUG_EVENT_SESSION_STATUS,
+            'CHANGE_DEBUGGEE_STATE': idebug.DbgEng.DEBUG_EVENT_CHANGE_DEBUGGEE_STATE,
+            'CHANGE_ENGINE_STATE': idebug.DbgEng.DEBUG_EVENT_CHANGE_ENGINE_STATE,
+            'CHANGE_SYMBOL_STATE': idebug.DbgEng.DEBUG_EVENT_CHANGE_SYMBOL_STATE,
         }
 
         if eventtype in interests:
